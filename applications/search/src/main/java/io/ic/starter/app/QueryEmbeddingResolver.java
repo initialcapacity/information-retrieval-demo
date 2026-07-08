@@ -14,12 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Resolves a query text to an embedding, preferring the committed cache for the
- * fixture queries (so demo runs offline) and falling back to a live embed for
- * arbitrary queries.
+ * Resolves a query text to an embedding, preferring the committed caches (fixture
+ * queries and out-of-band hero queries, so the demo runs offline) and falling
+ * back to a live embed for arbitrary queries.
  */
 public class QueryEmbeddingResolver {
-    private static final String CACHE_RESOURCE = "/fixture-query-embeddings.tsv";
+    private static final String FIXTURE_CACHE_RESOURCE = "/fixture-query-embeddings.tsv";
+    private static final String HERO_CACHE_RESOURCE = "/hero-query-embeddings.tsv";
 
     private final Map<String, float[]> cachedByText = new HashMap<>();
     private final EmbeddingClient liveClient;
@@ -45,12 +46,31 @@ public class QueryEmbeddingResolver {
     }
 
     private void loadCache() {
-        // Map cached vectors (keyed by query_id) back to query text via the fixture.
+        loadFixtureCache();
+        loadHeroCache();
+    }
+
+    /** Fixture cache is keyed by query_id; map each id back to its query text. */
+    private void loadFixtureCache() {
         Map<Long, String> textById = new HashMap<>();
         for (FixtureQuery q : new FixtureLoader().load()) {
             textById.put(q.queryId(), q.query());
         }
-        try (InputStream stream = QueryEmbeddingResolver.class.getResourceAsStream(CACHE_RESOURCE)) {
+        eachCacheLine(FIXTURE_CACHE_RESOURCE, (key, vector) -> {
+            String text = textById.get(Long.parseLong(key));
+            if (text != null) {
+                cachedByText.put(normalize(text), vector);
+            }
+        });
+    }
+
+    /** Hero cache is keyed by the normalized query text directly (out-of-band queries). */
+    private void loadHeroCache() {
+        eachCacheLine(HERO_CACHE_RESOURCE, (key, vector) -> cachedByText.put(normalize(key), vector));
+    }
+
+    private void eachCacheLine(String resource, java.util.function.BiConsumer<String, float[]> consumer) {
+        try (InputStream stream = QueryEmbeddingResolver.class.getResourceAsStream(resource)) {
             if (stream == null) {
                 return;
             }
@@ -61,21 +81,20 @@ public class QueryEmbeddingResolver {
                     continue;
                 }
                 int tab = line.indexOf('\t');
-                long queryId = Long.parseLong(line.substring(0, tab).trim());
-                String text = textById.get(queryId);
-                if (text == null) {
-                    continue;
-                }
-                String[] parts = line.substring(tab + 1).split(",");
-                float[] vector = new float[parts.length];
-                for (int i = 0; i < parts.length; i++) {
-                    vector[i] = Float.parseFloat(parts[i]);
-                }
-                cachedByText.put(normalize(text), vector);
+                consumer.accept(line.substring(0, tab).trim(), parseVector(line.substring(tab + 1)));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static float[] parseVector(String csv) {
+        String[] parts = csv.split(",");
+        float[] vector = new float[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            vector[i] = Float.parseFloat(parts[i]);
+        }
+        return vector;
     }
 
     private static String normalize(String text) {
