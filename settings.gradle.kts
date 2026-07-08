@@ -2,6 +2,7 @@ rootProject.name = "dubjug-search"
 
 include(
     "applications:tools",
+    "applications:search",
 
     "components:catalog",
     "components:search",

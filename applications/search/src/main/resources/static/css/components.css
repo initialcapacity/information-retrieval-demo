@@ -1,0 +1,1330 @@
+/* ============================================================
+   [ic] DESIGN SYSTEM — COMPONENTS
+   Loads after reset.css and tokens.css. Dogfoods the IC CSS
+   starter idiom: bare element selectors, simple class modifiers,
+   single-word state classes (no BEM `--`/`__`).
+   ============================================================ */
+
+/* ---------- BASE ----------
+   Re-establishes baseline after Meyer reset. Mirrors the IC starter's
+   typography.css: box-sizing on the universal selector, html/body
+   pinned to the brand tokens. */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  color: var(--text);
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--text);
+  background: var(--bg);
+}
+
+strong, b { font-weight: 700; }
+em, i { font-style: italic; }
+small { font-size: 0.875em; }
+code, kbd, samp, pre { font-family: var(--font-mono); }
+
+a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-color: var(--accent); }
+
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* ---------- LAYOUT SHELL ---------- */
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: var(--space-6) 0;
+}
+
+.sidebar > header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar > header > .title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 400;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.sidebar > header > .title > .sys {
+  font-weight: 400;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-muted);
+}
+
+.sidebar > header > .sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-light);
+  letter-spacing: var(--tracking-wide);
+}
+
+.sidebar nav h3 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: var(--space-4) var(--space-6) var(--space-2);
+}
+
+.sidebar nav a {
+  display: block;
+  padding: var(--space-2) var(--space-6);
+  font-family: var(--font-ui, var(--font-mono));
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  border-left: 2px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, background 120ms;
+}
+
+.sidebar nav a:hover {
+  color: var(--text);
+  background: var(--surface-sunken);
+}
+
+.sidebar nav a.is-active {
+  color: var(--text);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- MAIN ---------- */
+main { min-width: 0; }
+
+/* ---------- TOPBAR ----------
+   The doc topbar is `main > header` — direct child of <main>. Section
+   headers (main > section > header) are scoped separately below. */
+main > header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-8);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: saturate(160%) blur(10px);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+main > header > .breadcrumb {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+main > header > .breadcrumb b { color: var(--text); font-weight: 600; }
+main > header > .breadcrumb .separator { opacity: 0.4; }
+main > header > .breadcrumb .active { color: var(--signal); }
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  /* explicit overrides — bare `button` styling does not apply */
+  height: auto;
+  font-weight: 400;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+.theme-toggle > svg { color: var(--accent); width: 14px; height: 14px; }
+[data-theme="light"] .theme-toggle .sun  { display: none; }
+[data-theme="dark"]  .theme-toggle .moon { display: none; }
+
+/* ---------- SECTIONS ---------- */
+main > section {
+  padding: var(--space-8) var(--space-8) var(--space-9);
+  max-width: 1180px;
+  border-bottom: 1px solid var(--border);
+}
+
+main > section > header > .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: var(--space-3);
+}
+main > section > header > .eyebrow::before { content: "["; color: var(--text-muted); }
+main > section > header > .eyebrow::after { content: "]"; color: var(--text-muted); }
+main > section > header > .eyebrow > .eyebrow-inner { padding: 0 var(--space-1); }
+
+main > section > header > h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-5xl);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin-bottom: var(--space-5);
+  text-wrap: balance;
+  color: var(--text);
+}
+main > section > header > h2 em,
+main > section > header > h2 i { font-style: normal; color: var(--accent); }
+
+main > section > header > .lede {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xl);
+  color: var(--text-muted);
+  max-width: 62ch;
+  line-height: 1.5;
+  margin-bottom: var(--space-7);
+  text-wrap: pretty;
+  font-weight: 400;
+}
+
+/* ---------- SUBSECTIONS ---------- */
+.subsection { margin-top: var(--space-8); }
+
+.subsection-title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--text);
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.subsection-title > span[aria-hidden] {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  color: var(--accent);
+  font-weight: 400;
+  line-height: 1;
+}
+.subsection-title > small {
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: var(--space-3);
+}
+
+/* ============================================================
+   BRAND MARK — SVG wordmark (matches initialcapacity.io).
+   Color via currentColor; parent text color drives the fill.
+   ============================================================ */
+/* The wordmark IS the <svg> — no wrapper span. font-size: max(14px, 1em)
+   keeps the mark legible in small contexts (topbar, footer). height: 1em
+   ties the rendered mark to that font-size so the path scales with text.
+   vertical-align (not transform) handles the inline-with-text nudge so
+   centered grid/flex contexts aren't offset. */
+.wordmark {
+  display: inline-block;
+  height: 1em;
+  width: auto;
+  font-size: max(14px, 1em);
+  line-height: 1;
+  color: var(--text);
+  vertical-align: -0.08em;
+}
+.wordmark.inverse { color: var(--gray-0); }
+.on-dark .wordmark { color: var(--gray-0); }
+.hero .wordmark { color: var(--gray-0); }
+.logo-lockup .wordmark { color: inherit; }
+
+/* Size modifiers — same `max(min, ratio)` shape as the original size map.
+   Default `.wordmark` keeps the no-modifier `max(14px, 1em)` so inline
+   uses scale with parent text. The modifiers force a minimum floor for
+   contexts that need legibility (sm/md) or display weight (lg/xl/hero). */
+.wordmark.sm   { font-size: max(14px, 1.05em); }
+.wordmark.md   { font-size: max(16px, 1.15em); }
+.wordmark.lg   { font-size: max(22px, 1.3em); }
+.wordmark.xl   { font-size: max(32px, 1em); }
+.wordmark.hero { font-size: max(48px, 1.15em); }
+
+/* ---------- DENSITY INDICATOR ---------- */
+.density-indicator {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+.density-indicator > span:first-child {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+.density-indicator > span:last-child {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* ---------- BUTTONS ----------
+   Bare <button> = primary visual. Variants are single-class modifiers.
+   `.button` exists for non-button elements (e.g. <a>) that need to look
+   the same. */
+button, .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-h);
+  padding: 0 var(--control-pad-x);
+  font-family: var(--font-ui, var(--font-mono));
+  font-size: var(--input-fs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms, color 120ms, border-color 120ms, transform 80ms;
+  /* primary visuals — base for un-modified buttons */
+  background: var(--primary);
+  color: var(--primary-text);
+  border: 1px solid var(--primary);
+}
+button:hover, .button:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+button:active, .button:active { transform: translateY(1px); }
+button:focus-visible, .button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+button.accent, .button.accent { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+button.accent:hover, .button.accent:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+button.secondary, .button.secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+button.secondary:hover, .button.secondary:hover { background: var(--surface-sunken); border-color: var(--text-muted); }
+
+button.ghost, .button.ghost { background: transparent; color: var(--text); border-color: transparent; }
+button.ghost:hover, .button.ghost:hover { background: var(--surface-sunken); }
+
+button.danger, .button.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+button.danger:hover, .button.danger:hover { background: var(--red-500); border-color: var(--red-500); }
+
+/* Combined: ghost + danger renders the danger color on a transparent surface. */
+button.ghost.danger, .button.ghost.danger { background: transparent; color: var(--danger); border-color: transparent; }
+button.ghost.danger:hover, .button.ghost.danger:hover { background: var(--danger-bg); }
+
+button[disabled], .button[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+button.sm, .button.sm { height: 24px; font-size: var(--fs-xs); padding: 0 var(--space-3); }
+button.lg, .button.lg { height: 44px; font-size: var(--fs-md); padding: 0 var(--space-5); }
+
+button > .icon, .button > .icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+/* Generic layout helpers for arrangements inside the doc. */
+.row   { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.stack { display: flex; flex-direction: column; gap: var(--space-3); }
+.stack.gap-4 { gap: var(--space-4); }
+
+/* ---------- INPUTS ----------
+   Bare element selectors. Checkbox/radio/range carve-outs left for
+   their slice (none in slice 1). */
+input, select, textarea {
+  height: var(--control-h);
+  padding: 0 var(--control-pad-x);
+  font-family: var(--font-ui, var(--font-mono));
+  font-size: var(--input-fs);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  min-width: 220px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+input::placeholder, textarea::placeholder { color: var(--text-light); }
+
+/* ---------- BADGES ----------
+   `.badge.dot` adds a colored dot indicator at the start of the badge.
+   Safe because the capacity-grid's `.dot` rules are scoped to
+   `.cap-grid .dot` and don't leak globally. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 20px;
+  padding: 2px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  border-radius: var(--radius-xs);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  width: max-content;
+  flex-shrink: 0;
+}
+.badge.sold       { background: transparent; color: var(--text); border-color: var(--text); }
+.badge.potential  { background: transparent; color: var(--amber-600); border-color: var(--amber-600); }
+.badge.signal     { background: var(--signal-bg);  color: var(--signal);  border-color: color-mix(in srgb, var(--signal)  40%, transparent); }
+.badge.success    { background: var(--success-bg); color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, transparent); }
+.badge.danger     { background: var(--danger-bg);  color: var(--danger);  border-color: color-mix(in srgb, var(--danger)  40%, transparent); }
+.badge.warning    { background: var(--warning-bg); color: var(--warning); border-color: color-mix(in srgb, var(--warning) 40%, transparent); }
+.badge.solid-dark { background: var(--primary);    color: var(--primary-text); border-color: var(--primary); }
+.badge.dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------- CARDS ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  position: relative;
+}
+
+.card.flush { padding: 0; overflow: hidden; }
+
+/* Showcase variants — center their content (used to display the mark or a
+   logo at large scale) and optionally swap to a dark navy surface. */
+.card.center  { display: grid; place-items: center; padding: var(--space-8); }
+.card.on-navy { background: var(--navy-800); color: #fff; }
+.card.on-navy .wordmark { color: #fff; }
+.card.split   { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); padding: var(--space-6); }
+
+/* Stat-card variant — the metric tiles in #intro (VERSION / SURFACES /
+   STACK). Three labelled child blocks: small caps label, large mono
+   value, muted description. */
+.card.stat > .label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.card.stat > .value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+}
+.card.stat > .desc {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+/* Mark + clearspace demo. The dashed marker is a ::before pseudo so it
+   doesn't participate in the centering grid. */
+.clearspace-demo {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+}
+.clearspace-demo::before {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border: 1px dashed var(--border-strong);
+  pointer-events: none;
+}
+
+/* Mono-styled rule list — used in the brand construction card to show
+   clearspace and minimum-size rules alongside the mark. */
+.brand-rules {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.brand-rules > li { line-height: 1.5; }
+
+/* Accent variants set --card-accent; the bracket pseudo-elements read it. */
+.card.accent  { --card-accent: var(--accent); }
+.card.primary { --card-accent: var(--primary); }
+.card.signal  { --card-accent: var(--signal); }
+
+/* All accent cards strip their border and use an inset ring so the
+   bracket pseudo-elements sit on a clean edge. */
+.card.accent,
+.card.primary,
+.card.signal {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* Bracket-corner treatment (TL + BR), 16px L-shape, 2px stroke. The
+   geometry is the signature container shape of the system. */
+.card.accent::before,  .card.accent::after,
+.card.primary::before, .card.primary::after,
+.card.signal::before,  .card.signal::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--card-accent);
+}
+.card.accent::before,
+.card.primary::before,
+.card.signal::before {
+  top: -1px; left: -1px;
+  border-right: none; border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.card.accent::after,
+.card.primary::after,
+.card.signal::after {
+  bottom: -1px; right: -1px;
+  border-left: none; border-top: none;
+  border-bottom-right-radius: var(--radius-md);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* The accent-colored meta label that appears on accent cards. No good
+   semantic element for "metadata eyebrow" — class-based. */
+.card-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--card-accent) !important;
+  margin-bottom: var(--space-2);
+}
+.card-num { display: none; }
+
+/* Body text in accent cards stays neutral (only the label takes the accent).
+   Scoped to actual text elements via :where() so other classed children
+   (e.g. .decision-label inside .card.signal in #directions) keep their
+   own color. */
+.card.accent  :where(h3, h4, p),
+.card.primary :where(h3, h4, p),
+.card.signal  :where(h3, h4, p) { color: var(--text); }
+
+/* Card title/body: semantic where possible. :where() drops these to
+   specificity 0 so any explicit class on a card's child element (like
+   .card-label on a <p>) wins over the generic body styling. */
+.card :where(h3, h4) {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  margin-bottom: var(--space-2);
+  color: var(--text);
+}
+.card :where(p) {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  color: var(--text);
+  line-height: var(--lh-base);
+  margin-bottom: var(--space-4);
+}
+.card :where(p):last-child { margin-bottom: 0; }
+
+/* Card with explicit header — used by data tables and similar. */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.card-header > h3 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0;
+}
+.card-body { padding: var(--space-5); }
+
+/* ---------- TOASTS ---------- */
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-md);
+  min-width: 320px;
+  max-width: 420px;
+}
+
+.toast > .toast-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  border-radius: var(--radius-xs);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+}
+.toast > .toast-icon svg { width: 14px; height: 14px; }
+
+.toast.success > .toast-icon { background: var(--success-bg); color: var(--success); }
+.toast.danger  > .toast-icon { background: var(--danger-bg);  color: var(--danger); }
+.toast.signal  > .toast-icon { background: var(--signal-bg);  color: var(--signal); }
+.toast.warning > .toast-icon { background: var(--warning-bg); color: var(--warning); }
+
+.toast > div { flex: 1; }
+.toast > div > strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+.toast > div > p {
+  font-family: var(--font-ui, var(--font-mono));
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* The close button — explicit overrides for the bare `button` defaults. */
+.toast > button.close {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 16px;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+  height: auto;
+  font-family: inherit;
+  font-weight: 400;
+  letter-spacing: 0;
+  border-radius: 0;
+  white-space: normal;
+}
+.toast > button.close:hover { background: transparent; color: var(--text); border-color: transparent; }
+
+/* ---------- TERMINAL / COMMAND INPUT ---------- */
+.terminal {
+  background: var(--term-bg);
+  color: var(--term-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  box-shadow: var(--shadow-terminal);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.terminal-caret {
+  color: var(--term-caret);
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.terminal > input {
+  flex: 1;
+  /* override bare input baseline */
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--term-text);
+  font: inherit;
+  caret-color: var(--term-caret);
+}
+.terminal > input:focus { outline: none; box-shadow: none; }
+.terminal > input::placeholder { color: var(--term-muted); }
+
+.terminal-block {
+  background: var(--term-bg);
+  color: var(--term-text);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  box-shadow: var(--shadow-terminal);
+}
+.terminal-block .prompt  { color: var(--term-caret); }
+.terminal-block .comment { color: var(--term-muted); }
+.terminal-block .ok      { color: #4ade80; }
+.terminal-block .warn    { color: var(--orange-400); }
+
+.terminal-typer::after {
+  content: "▊";
+  color: var(--term-caret);
+  animation: term-blink 1s steps(2) infinite;
+  margin-left: 2px;
+}
+@keyframes term-blink { 50% { opacity: 0; } }
+
+/* ---------- GRID HELPERS ---------- */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+.grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-3); }
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-4, .grid-6 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------- FOOTER ---------- */
+.footer {
+  padding: var(--space-7) var(--space-8);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- COLOR SWATCHES ---------- */
+.swatch-row {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 2px;
+  margin-bottom: var(--space-3);
+}
+.swatch-row.short { grid-template-columns: repeat(10, 1fr); }
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  aspect-ratio: 1 / 1.2;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.2;
+  border: 1px solid var(--border-muted);
+}
+.swatch > strong { font-weight: 700; }
+.swatch > code { opacity: 0.75; font-size: 10px; }
+
+.swatch-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.swatch-label small { font-weight: 400; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+
+.color-token-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.color-token-row:last-child { border-bottom: none; }
+.color-token-row > .chip { width: 24px; height: 24px; border-radius: var(--radius-xs); border: 1px solid var(--border); }
+.color-token-row > code  { font-weight: 600; }
+.color-token-row > .desc { color: var(--text-muted); }
+.color-token-row > .value { color: var(--text-muted); justify-self: end; }
+
+/* ---------- TABLE ---------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.table th, .table td {
+  padding: var(--cell-pad-y) var(--cell-pad-x);
+  min-height: var(--row-height);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-bottom: 2px solid var(--border-strong);
+}
+.table td.num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table tbody tr:hover { background: var(--surface-sunken); }
+.table .row-header td {
+  background: var(--surface-sunken);
+  font-weight: 700;
+  border-left: 3px solid var(--primary);
+  border-bottom-color: var(--border-strong);
+}
+.table .row-header.potential td { border-left-color: var(--amber-600); background: #fffbeb; color: var(--amber-600); }
+[data-theme="dark"] .table .row-header.potential td { background: rgba(217,119,6,0.1); }
+
+/* ---------- WEEK-GRID (Capacity signature) ----------
+   Refactored to (X): bare element selectors with simple-class modifiers
+   under .cap-grid scope. .head / .label / .cell are scoped so the
+   generic class names don't bleed elsewhere. */
+.cap-grid {
+  display: grid;
+  grid-template-columns: 260px repeat(10, minmax(56px, 1fr));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  background: var(--surface);
+  min-width: 880px;
+}
+.cap-grid > * {
+  padding: var(--cell-pad-y) var(--cell-pad-x);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  min-height: var(--row-height);
+  white-space: nowrap;
+}
+
+.cap-grid > .head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  justify-content: center;
+}
+.cap-grid > .head.now { color: var(--text); border-bottom: 2px solid var(--accent); }
+
+.cap-grid > .label { font-size: 12px; }
+.cap-grid > .label.project {
+  font-weight: 700;
+  border-left: 3px solid var(--primary);
+  background: var(--surface-sunken);
+}
+/* Potential proj header row — the warm tint applies across the whole row,
+   so .head.potential cells (right of the project label) match. */
+.cap-grid > .label.project.potential,
+.cap-grid > .head.potential {
+  background: #fffbeb;
+  color: var(--amber-600);
+}
+.cap-grid > .label.project.potential { border-left-color: var(--amber-600); }
+[data-theme="dark"] .cap-grid > .label.project.potential,
+[data-theme="dark"] .cap-grid > .head.potential { background: rgba(217,119,6,0.1); }
+.cap-grid > .label.person { padding-left: var(--space-5); }
+.cap-grid > .label.gap {
+  font-style: italic;
+  color: var(--text-muted);
+  padding-left: var(--space-5);
+  border-left: 2px dashed var(--border-strong);
+}
+
+.cap-grid > .cell { justify-content: center; gap: 2px; }
+.cap-grid > .cell.over { background: #fef2f2; }
+[data-theme="dark"] .cap-grid > .cell.over { background: rgba(220,38,38,0.12); }
+.cap-grid > .cell.potential { background: #fffdf5; }
+[data-theme="dark"] .cap-grid > .cell.potential { background: rgba(217,119,6,0.06); }
+
+/* Dot symbols inside cap-grid cells, plus the legend below the grid.
+   Scoped via :where(.cap-grid, .dot-legend) so the generic .dot class
+   name doesn't leak — frees .badge.dot for use as a separate badge
+   modifier (see badges section above). */
+:where(.cap-grid, .dot-legend) .dot {
+  display: inline-block;
+  width: 8px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1;
+}
+:where(.cap-grid, .dot-legend) .dot.work { color: var(--gray-600); }
+:where(.cap-grid, .dot-legend) .dot.gap  { color: var(--gray-400); }
+:where(.cap-grid, .dot-legend) .dot.pto  { color: var(--amber-600); }
+:where(.cap-grid, .dot-legend) .dot.over { color: var(--danger); }
+:where(.cap-grid, .dot-legend) .dot.off  { color: var(--border); font-size: 10px; }
+
+.dot-legend {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* ---------- TYPE DEMO ---------- */
+.type-spec {
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  gap: var(--space-5);
+  align-items: baseline;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border);
+}
+.type-spec:last-child { border-bottom: none; }
+.type-spec > .label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.type-spec > .meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-light);
+  text-align: right;
+}
+
+/* ---------- SPACING RULER ---------- */
+.spacing-row {
+  display: grid;
+  grid-template-columns: 80px 120px 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.spacing-row > code  { font-weight: 600; }
+.spacing-row > .value { color: var(--text-muted); }
+.spacing-row > .bar  { height: 14px; background: var(--primary); border-radius: 2px; }
+
+/* ---------- DIRECTION PREVIEW (decision card) ----------
+   3-up column layout used inside the .card.signal that documents the
+   chosen type direction. Each column is a labelled sample. */
+.direction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-6);
+}
+.direction-col > .col-label,
+.direction-col > .col-note {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+.direction-col > .col-label { margin-bottom: var(--space-2); }
+.direction-col > .col-note  { margin-top: var(--space-3); }
+
+/* The cyan "[ decision · DATE ]" label at the top of the card. Mono xs
+   tracking-caps in signal color — not a card-label (which is bold for
+   regular cards); reused once here. */
+.decision-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- SHAPE / ELEVATION DEMOS ----------
+   Small 3-up grid used inside cards to show radii or elevation samples
+   side-by-side. .demo-tile centers a labeled sample block. */
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+.demo-tile { text-align: center; }
+.demo-tile > .block {
+  height: 64px;
+  background: var(--primary);
+  margin-bottom: var(--space-2);
+}
+.demo-tile > code  { font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600; }
+.demo-tile > .value { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-muted); display: block; }
+
+/* Elevation demos are simpler: a single floating box that labels itself. */
+.elevation-tile {
+  background: var(--surface);
+  height: 80px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+/* ---------- ICON SET ---------- */
+.icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--space-3); }
+.icon-card {
+  aspect-ratio: 1;
+  display: grid; place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.icon-card svg { width: 22px; height: 22px; }
+.icon-caption {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
+  text-align: center; margin-top: var(--space-1);
+}
+
+/* ---------- MARKETING HERO ---------- */
+.hero {
+  background: var(--navy-800);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-9) var(--space-8);
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(6,182,212,0.18), transparent 40%),
+    radial-gradient(ellipse at 90% 100%, rgba(237,137,54,0.12), transparent 40%);
+  pointer-events: none;
+}
+.hero > .inner { position: relative; max-width: 640px; }
+.hero > .inner > .eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--cyan-300);
+  margin-bottom: var(--space-4);
+}
+.hero > .inner > h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-5);
+  text-wrap: balance;
+}
+.hero > .inner > h1 b { color: var(--orange-500); }
+.hero > .inner > .lede {
+  font-family: var(--font-body, var(--font-sans));
+  font-size: var(--fs-lg);
+  color: rgba(255,255,255,0.75);
+  max-width: 52ch;
+  margin-bottom: var(--space-6);
+  text-wrap: pretty;
+}
+.hero > .inner > .cta-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.hero > .brackets-decor {
+  position: absolute;
+  top: var(--space-6);
+  right: var(--space-7);
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  /* The wordmark inside inherits color from .hero .wordmark (white) — see
+     above. The faded text color the original used here was vestigial from
+     a typed-bracket version; not needed with the SVG mark. */
+}
+
+/* ---------- LOGO LOCKUP ---------- */
+.logo-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  background: var(--navy-800);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  min-height: 72px;
+}
+.logo-lockup.orange { background: var(--orange-500); }
+.logo-lockup svg { width: 36px; height: 36px; flex-shrink: 0; }
+.lockup-wordmark {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.lockup-tagline {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+/* Inline variant: bare mark + wordmark, no plate. Inherits color and scales
+   with the parent's font-size — used for email signatures, social-card
+   watermarks, footer marks, anywhere the deck shows "[ic] initial capacity"
+   running with surrounding type rather than as a self-contained badge. */
+.logo-lockup.inline {
+  background: transparent;
+  padding: 0;
+  min-height: 0;
+  border-radius: 0;
+  color: inherit;
+  gap: var(--space-2);
+}
+.logo-lockup.inline svg { width: 1.4em; height: 1.4em; }
+/* Override .card :where(p) { color: var(--text) } so the wordmark inherits
+   the lockup's color (white on navy/painted surfaces, navy on light). */
+.logo-lockup.inline .lockup-wordmark { font-size: inherit; color: inherit; }
+
+/* ---------- IMAGE BACKGROUND — VAN GOGH ---------- */
+/* Brand-direction imagery from Initial Capacity Brand Guidelines: a tech-
+   feeling Van Gogh wash sitting under a navy overlay so foreground text
+   stays legible. Use as a modifier on .hero, .card.on-navy, or any future
+   dark-surface pattern. Two intensities: .subtle (texture only) and
+   .poster (painting-forward, for marketing moments). Image picks are
+   swappable via .field / .street modifiers. */
+.bg-vangogh {
+  --bg-vangogh-image: url("images/bg-vangogh-sky.webp");
+  --bg-vangogh-wash: rgba(15, 23, 33, 0.85);
+  background-color: var(--navy-800);
+  background-image:
+    linear-gradient(var(--bg-vangogh-wash), var(--bg-vangogh-wash)),
+    var(--bg-vangogh-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #fff;
+}
+.bg-vangogh.field  { --bg-vangogh-image: url("images/bg-vangogh-field.webp"); }
+.bg-vangogh.street { --bg-vangogh-image: url("images/bg-vangogh-street.webp"); }
+.bg-vangogh.starry { --bg-vangogh-image: url("images/bg-vangogh-starry.webp"); }
+.bg-vangogh.harbor { --bg-vangogh-image: url("images/bg-vangogh-harbor.webp"); }
+
+.bg-vangogh.subtle { --bg-vangogh-wash: rgba(15, 23, 33, 0.85); }
+.bg-vangogh.poster { --bg-vangogh-wash: rgba(15, 23, 33, 0.45); }
+
+/* When applied to the marketing hero, suppress the default radial-gradient
+   overlay so the painting reads cleanly through the navy wash. */
+.hero.bg-vangogh::after { display: none; }
+
+/* Grid for the "Background options" showcase — small labeled tiles, one per
+   image pick, used so the design system can show all available
+   .bg-vangogh modifiers at a glance. */
+.bg-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.bg-options-cell { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.bg-options-cell > div {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+.bg-options-cell figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+.bg-options-cell figcaption span { color: var(--text-light); }
+
+/* ---------- PRINCIPLE CARD ---------- */
+.principle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  position: relative;
+}
+/* The "[ 01 ]" eyebrow above the principle title. Kept coupled to .principle
+   for now — generalize if the same treatment appears in another card type. */
+.principle-num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+/* Same :where() pattern as .card so .principle-num isn't beaten by these. */
+.principle :where(h4) {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-2);
+  color: var(--accent);
+}
+.principle :where(p) {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ---------- NAVBAR DEMO ---------- */
+.nav-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--navy-800);
+  color: #fff;
+  padding: 0 var(--space-6);
+  height: 48px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+.nav-demo > .brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+}
+.nav-demo > .brand .wordmark { color: #fff; }
+.nav-demo > .brand span {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.02em;
+}
+.nav-demo > .links { display: flex; gap: var(--space-3); }
+.nav-demo > .links button {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-xs);
+  /* override bare button defaults */
+  height: auto;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.nav-demo > .links button:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* ---------- VOICE EXAMPLES ---------- */
+.voice-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--border);
+}
+.voice-row:last-child { border-bottom: none; }
+
+.voice-col h5 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+.voice-col p {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--text);
+}
+
+/* ---------- MESSAGE TONE ----------
+   Generic green/red prefix-and-color treatments. Apply to any element
+   (heading, paragraph, aside) that should signal positive or negative
+   tone. The sibling selector mutes prose that follows a negative
+   message — used by voice examples but reusable wherever a contrast
+   pair lives next to body copy. */
+.positive-message { color: var(--success); }
+.positive-message::before { content: "[ + ] "; }
+.negative-message { color: var(--danger); }
+.negative-message::before { content: "[ - ] "; }
+.negative-message ~ p { color: var(--text-muted); }
+

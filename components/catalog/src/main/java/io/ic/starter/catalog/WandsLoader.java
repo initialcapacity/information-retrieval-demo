@@ -51,7 +51,15 @@ public class WandsLoader {
         if (value == null) {
             return null;
         }
-        String trimmed = value.trim();
+        String trimmed = unquote(value.trim());
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    /** Strips CSV-style quoting: fields containing a quote are wrapped in "" with inner "" doubled. */
+    private static String unquote(String field) {
+        if (field.length() >= 2 && field.startsWith("\"") && field.endsWith("\"")) {
+            return field.substring(1, field.length() - 1).replace("\"\"", "\"");
+        }
+        return field;
     }
 }

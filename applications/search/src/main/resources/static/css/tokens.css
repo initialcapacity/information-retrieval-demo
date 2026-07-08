@@ -1,0 +1,251 @@
+/* ============================================================
+   [ic] DESIGN SYSTEM — TOKENS
+   Navy + orange + electric-cyan. Light & dark. Two density modes.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* ---------- BRAND PALETTE — RAW ---------- */
+  /* Navy (primary). The site uses #2d3748; we extend to a full scale. */
+  --navy-50:  #f4f6f9;
+  --navy-100: #e4e8ef;
+  --navy-200: #c6cfdc;
+  --navy-300: #9aabc0;
+  --navy-400: #68809d;
+  --navy-500: #486180;
+  --navy-600: #374e68;
+  --navy-700: #2d3e54;
+  --navy-800: #243244;   /* approximate site navy */
+  --navy-900: #1b2633;
+  --navy-950: #0f1721;
+
+  /* Orange (accent). The site CTA is ~#ed8936. */
+  --orange-50:  #fff7ed;
+  --orange-100: #ffedd5;
+  --orange-200: #fed7aa;
+  --orange-300: #fdba74;
+  --orange-400: #fb923c;
+  --orange-500: #ed8936;  /* brand orange */
+  --orange-600: #d97706;
+  --orange-700: #b45309;
+  --orange-800: #92400e;
+  --orange-900: #7c2d12;
+
+  /* Cyan (the new third accent — engineering signal). */
+  --cyan-50:  #ecfeff;
+  --cyan-100: #cffafe;
+  --cyan-200: #a5f3fc;
+  --cyan-300: #67e8f9;
+  --cyan-400: #22d3ee;
+  --cyan-500: #06b6d4;   /* accent */
+  --cyan-600: #0891b2;
+  --cyan-700: #0e7490;
+  --cyan-800: #155e75;
+  --cyan-900: #164e63;
+
+  /* Neutrals — pure grayscale, warmed slightly to sit next to navy */
+  --gray-0:   #ffffff;
+  --gray-25:  #fafafa;
+  --gray-50:  #f5f5f5;
+  --gray-100: #ededed;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
+  --gray-950: #0a0a0a;
+
+  /* Semantic */
+  --green-500: #16a34a;
+  --green-600: #15803d;
+  --red-500:   #dc2626;
+  --red-600:   #b91c1c;
+  --amber-500: #d97706;
+  --amber-600: #b45309;
+
+  /* ---------- SEMANTIC TOKENS — LIGHT MODE (default) ---------- */
+  --bg:              var(--gray-25);
+  --surface:         var(--gray-0);
+  --surface-sunken:  var(--gray-50);
+  --surface-raised:  var(--gray-0);
+  --text:            var(--navy-900);
+  --text-muted:      var(--gray-500);
+  --text-light:      var(--gray-400);
+  --text-inverse:    var(--gray-0);
+  --border:          var(--gray-200);
+  --border-strong:   var(--gray-300);
+  --border-muted:    var(--gray-100);
+
+  --primary:         var(--navy-800);
+  --primary-hover:   var(--navy-900);
+  --primary-text:    var(--gray-0);
+
+  --accent:          var(--orange-500);
+  --accent-hover:    var(--orange-600);
+  --accent-text:     var(--gray-0);
+
+  --signal:          var(--cyan-600);
+  --signal-hover:    var(--cyan-700);
+  --signal-bg:       var(--cyan-50);
+
+  --success:         var(--green-600);
+  --success-bg:      #f0fdf4;
+  --danger:          var(--red-600);
+  --danger-bg:       #fef2f2;
+  --warning:         var(--amber-600);
+  --warning-bg:      #fffbeb;
+
+  --focus-ring:      color-mix(in srgb, var(--cyan-500) 50%, transparent);
+
+  /* Terminal surface — for command/NL-style inputs */
+  --term-bg:         var(--navy-800);
+  --term-text:       var(--gray-0);
+  --term-muted:      rgba(255,255,255,0.55);
+  --term-caret:      var(--cyan-400);
+
+  /* ---------- TYPE ---------- */
+  --font-mono:    "JetBrains Mono", "SF Mono", "Fira Code", ui-monospace, monospace;
+  --font-sans:    "Space Grotesk", "Inter", system-ui, -apple-system, sans-serif;
+  /* Section headlines and hero H1. The [ic] mark itself is an SVG asset, not a font. */
+  --font-display: "Geist", "Space Grotesk", system-ui, sans-serif;
+
+  --fs-2xs:  10px;
+  --fs-xs:   11px;
+  --fs-sm:   12px;
+  --fs-base: 13px;
+  --fs-md:   14px;
+  --fs-lg:   16px;
+  --fs-xl:   18px;
+  --fs-2xl:  22px;
+  --fs-3xl:  28px;
+  --fs-4xl:  36px;
+  --fs-5xl:  48px;
+  --fs-6xl:  64px;
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.3;
+  --lh-base:  1.5;
+  --lh-loose: 1.7;
+
+  --tracking-wide: 0.06em;
+  --tracking-caps: 0.08em;
+
+  /* ---------- SPACING (rhythm: 4px base) ---------- */
+  --space-0:  0;
+  --space-1:  2px;
+  --space-2:  4px;
+  --space-3:  8px;
+  --space-4:  12px;
+  --space-5:  16px;
+  --space-6:  24px;
+  --space-7:  32px;
+  --space-8:  48px;
+  --space-9:  64px;
+  --space-10: 96px;
+
+  /* ---------- RADII ---------- */
+  --radius-none: 0;
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-full: 9999px;
+
+  /* ---------- ELEVATION ---------- */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 33, 0.06);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 33, 0.08), 0 1px 2px rgba(15, 23, 33, 0.04);
+  --shadow-md: 0 4px 8px rgba(15, 23, 33, 0.08), 0 2px 4px rgba(15, 23, 33, 0.04);
+  --shadow-lg: 0 12px 24px rgba(15, 23, 33, 0.12), 0 4px 8px rgba(15, 23, 33, 0.06);
+  --shadow-terminal: 0 8px 32px rgba(15, 23, 33, 0.24);
+
+  /* ---------- DENSITY — default "compact" (Capacity style) ---------- */
+  --row-height:     28px;
+  --cell-pad-x:     8px;
+  --cell-pad-y:     4px;
+  --control-h:      28px;
+  --control-pad-x:  10px;
+  --input-fs:       var(--fs-base);
+}
+
+/* Comfortable density */
+[data-density="comfortable"] {
+  --row-height:     40px;
+  --cell-pad-x:     16px;
+  --cell-pad-y:     12px;
+  --control-h:      40px;
+  --control-pad-x:  16px;
+  --input-fs:       var(--fs-md);
+}
+
+/* ---------- DARK MODE ---------- */
+[data-theme="dark"] {
+  --bg:              var(--navy-950);
+  --surface:         var(--navy-900);
+  --surface-sunken:  #0a1119;
+  --surface-raised:  var(--navy-800);
+  --text:            #e4e8ef;
+  --text-muted:      #8695a8;
+  --text-light:      #5c6b7e;
+  --text-inverse:    var(--navy-900);
+  --border:          #2a3a4f;
+  --border-strong:   #3a4e68;
+  --border-muted:    #1f2c3e;
+
+  --primary:         var(--cyan-400);
+  --primary-hover:   var(--cyan-300);
+  --primary-text:    var(--navy-950);
+
+  --accent:          var(--orange-400);
+  --accent-hover:    var(--orange-300);
+  --accent-text:     var(--navy-950);
+
+  --signal:          var(--cyan-300);
+  --signal-hover:    var(--cyan-200);
+  --signal-bg:       rgba(6, 182, 212, 0.12);
+
+  --success-bg:      rgba(22, 163, 74, 0.12);
+  --danger-bg:       rgba(220, 38, 38, 0.12);
+  --warning-bg:      rgba(217, 119, 6, 0.12);
+
+  --term-bg:         #0a1119;
+  --term-text:       #e4e8ef;
+  --term-muted:      rgba(228, 232, 239, 0.55);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.5);
+  --shadow-lg: 0 12px 24px rgba(0,0,0,0.6);
+  --shadow-terminal: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+/* Font roles
+   - font-display: Geist 700/800   → section titles, hero headlines
+   - font-sans:    Space Grotesk   → body prose, subheads, ledes
+   - font-mono:    JetBrains Mono  → eyebrows, labels, data, code, terminal
+   The [ic] brand mark is an SVG asset (assets/ic-logo.svg), not a font.
+*/
+
+/* ---------- GLOBAL RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body { min-height: 100vh; }
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+code, pre, kbd, samp { font-family: var(--font-mono); }

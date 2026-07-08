@@ -6,8 +6,12 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProductsGateway {
 
@@ -61,6 +65,24 @@ public class ProductsGateway {
             }
             return null;
         });
+    }
+
+    public Map<Long, ProductRecord> findSummaries(Collection<Long> productIds) {
+        var result = new HashMap<Long, ProductRecord>();
+        if (productIds.isEmpty()) {
+            return result;
+        }
+        String inClause = productIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        databaseTemplate.queryList(
+                "select product_id, product_name, product_description, product_class, category_hierarchy, search_text " +
+                        "from products where product_id in (" + inClause + ")",
+                rs -> {
+                    var product = mapProduct(rs);
+                    result.put(product.productId(), product);
+                    return product;
+                }
+        );
+        return result;
     }
 
     public List<ProductEmbeddingInput> productsMissingEmbeddings(int limit) {

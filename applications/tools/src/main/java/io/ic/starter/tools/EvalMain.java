@@ -1,6 +1,8 @@
 package io.ic.starter.tools;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ic.starter.databasesupport.DataSourceFactory;
+import io.ic.starter.eval.EvalReport;
 import io.ic.starter.eval.EvalRunner;
 import io.ic.starter.eval.FixtureLoader;
 import io.ic.starter.eval.FixtureQuery;
@@ -16,7 +18,9 @@ import io.ic.starter.search.HybridSearchService;
 import io.ic.starter.search.ReciprocalRankFusion;
 
 import javax.sql.DataSource;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,18 +64,19 @@ public class EvalMain {
         System.out.println("relevance: Exact + Partial (default)");
         System.out.println("=".repeat(60));
 
+        // Headline / gate config: Exact-only, k=10 (the agreed demo binarization).
         List<MethodMetrics> overall = List.of(
-                runner.evaluate("bm25", queries, qrels, bm25, K),
-                runner.evaluate("dense", queries, qrels, dense, K),
-                runner.evaluate("hybrid", queries, qrels, hybridRank, K)
-        );
-        System.out.println(ResultsTable.format("OVERALL (Exact+Partial)", K, overall));
-
-        // Strict Exact-only mode.
-        System.out.println(ResultsTable.format("OVERALL (Exact only)", K, List.of(
                 runner.evaluate("bm25", queries, qrelsExact, bm25, K),
                 runner.evaluate("dense", queries, qrelsExact, dense, K),
                 runner.evaluate("hybrid", queries, qrelsExact, hybridRank, K)
+        );
+        System.out.println(ResultsTable.format("OVERALL (Exact only) [headline config]", K, overall));
+
+        // Default Exact+Partial mode (shown for completeness; hybrid ~ dense here at k=10).
+        System.out.println(ResultsTable.format("OVERALL (Exact+Partial)", K, List.of(
+                runner.evaluate("bm25", queries, qrels, bm25, K),
+                runner.evaluate("dense", queries, qrels, dense, K),
+                runner.evaluate("hybrid", queries, qrels, hybridRank, K)
         )));
 
         // Per-lean breakdowns.
@@ -125,5 +130,39 @@ public class EvalMain {
             System.out.println("  hard-for-both queries:");
             hardQueries.forEach(h -> System.out.println("    - " + h));
         }
+
+        // Export a real-results snapshot for the web app's eval view (offline render).
+        var report = new EvalReport(K, ReciprocalRankFusion.DEFAULT_K, 400, List.of(
+                buildMode("Exact only", queries, byLean, qrelsExact, bm25, dense, hybridRank, runner),
+                buildMode("Exact + Partial", queries, byLean, qrels, bm25, dense, hybridRank, runner)
+        ));
+        Path jsonOut = Path.of("applications/search/src/main/resources/eval-results.json");
+        try {
+            Files.createDirectories(jsonOut.getParent());
+            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(jsonOut.toFile(), report);
+            System.out.println("\nWrote eval snapshot -> " + jsonOut.toAbsolutePath());
+        } catch (Exception e) {
+            System.out.println("Failed to write eval snapshot: " + e.getMessage());
+        }
+    }
+
+    private static EvalReport.ModeReport buildMode(
+            String name, List<FixtureQuery> queries, Map<String, List<FixtureQuery>> byLean,
+            Qrels qrels, RankingFunction bm25, RankingFunction dense, RankingFunction hybrid, EvalRunner runner) {
+        List<MethodMetrics> overall = List.of(
+                runner.evaluate("bm25", queries, qrels, bm25, K),
+                runner.evaluate("dense", queries, qrels, dense, K),
+                runner.evaluate("hybrid", queries, qrels, hybrid, K)
+        );
+        var buckets = new ArrayList<EvalReport.BucketReport>();
+        for (String lean : List.of("keyword", "semantic", "mixed")) {
+            List<FixtureQuery> bucket = byLean.getOrDefault(lean, List.of());
+            buckets.add(new EvalReport.BucketReport(lean, bucket.size(), List.of(
+                    runner.evaluate("bm25", bucket, qrels, bm25, K),
+                    runner.evaluate("dense", bucket, qrels, dense, K),
+                    runner.evaluate("hybrid", bucket, qrels, hybrid, K)
+            )));
+        }
+        return new EvalReport.ModeReport(name, overall, buckets);
     }
 }

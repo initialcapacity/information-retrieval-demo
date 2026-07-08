@@ -33,8 +33,8 @@ public class FixtureLoader {
                 String[] f = line.split("\t", -1);
                 queries.add(new FixtureQuery(
                         Long.parseLong(f[0].trim()),
-                        f[1],
-                        f[2],
+                        unquote(f[1]),
+                        unquote(f[2]),
                         Integer.parseInt(f[3].trim()),
                         Boolean.parseBoolean(f[7].trim()),
                         f[8].trim()
@@ -44,5 +44,17 @@ public class FixtureLoader {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Strips CSV-style quoting: fields containing a quote are wrapped in "" with inner "" doubled. */
+    static String unquote(String field) {
+        if (field == null) {
+            return null;
+        }
+        String trimmed = field.trim();
+        if (trimmed.length() >= 2 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+            return trimmed.substring(1, trimmed.length() - 1).replace("\"\"", "\"");
+        }
+        return trimmed;
     }
 }
