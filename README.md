@@ -21,6 +21,7 @@ set -a && . ./.env && set +a                         # load DATABASE_URL + OPENA
 ./gradlew :applications:tools:ingestWands            # load ~43K WANDS products
 ./gradlew :applications:tools:backfillEmbeddings     # embed products + build HNSW (~20 min, one OpenAI pass)
 ./gradlew :applications:tools:cacheQueryEmbeddings   # cache the 116 fixture query vectors (offline search + eval)
+./gradlew :applications:tools:cacheHeroQueries       # cache out-of-band hero queries (e.g. bathroom vanity knobs)
 ```
 
 ## Run
@@ -46,4 +47,4 @@ set -a && . ./.env && set +a                         # load DATABASE_URL + OPENA
 
 ## Offline note
 
-The two in-band hero queries (`beds that have leds`, `writing desk 48"`) are served from the committed embedding cache, so they need no network. `bathroom vanity knobs` is out-of-band (deliberately excluded from the eval fixture), so it triggers one live OpenAI embed on submit. On unreliable wifi, embed it once before going on stage, or cache it ahead of time (a text-keyed hero-query cache, tracked in the demo spec).
+With both cache steps run, the entire demo is network-independent. The in-band hero queries (`beds that have leds`, `writing desk 48"`) come from the fixture cache; the out-of-band `bathroom vanity knobs` comes from the hero-query cache. Any *other* ad-hoc query typed live will still do a live OpenAI embed and needs `OPENAI_API_KEY`. To add more offline hero queries, append to `HERO_QUERIES` in `CacheHeroQueriesMain` and re-run `:applications:tools:cacheHeroQueries`.
