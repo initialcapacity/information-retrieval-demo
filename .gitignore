@@ -1,0 +1,7 @@
+.idea
+build
+.gradle
+.env
+# Raw WANDS dumps and derived caches are reproducible; do not commit them.
+/data/wands/
+/data/query-embeddings.tsv
