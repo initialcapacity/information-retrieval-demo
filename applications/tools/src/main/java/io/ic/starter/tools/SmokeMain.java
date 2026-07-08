@@ -26,7 +26,7 @@ public class SmokeMain {
         String databaseUrl = System.getenv("DATABASE_URL");
         String apiKey = System.getenv("OPENAI_API_KEY");
 
-        DataSource dataSource = DataSourceFactory.create(databaseUrl);
+        DataSource dataSource = DataSourceFactory.create(databaseUrl, 10, "set hnsw.ef_search = 400");
         var bm25Gateway = new Bm25Gateway(dataSource);
         var embeddingGateway = new EmbeddingGateway(dataSource);
         var productsGateway = new ProductsGateway(dataSource);

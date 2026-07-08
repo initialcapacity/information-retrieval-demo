@@ -35,7 +35,9 @@ public class EvalMain {
         Path labelCsv = Path.of(args.length > 0 ? args[0] : "data/wands/label.csv");
         Path cacheFile = Path.of(args.length > 1 ? args[1] : "data/query-embeddings.tsv");
 
-        DataSource dataSource = DataSourceFactory.create(databaseUrl);
+        // Raise HNSW ef_search well above the candidate depth: the pgvector default
+        // (40) under-retrieves and was artificially depressing dense/hybrid.
+        DataSource dataSource = DataSourceFactory.create(databaseUrl, 10, "set hnsw.ef_search = 400");
         var bm25Gateway = new Bm25Gateway(dataSource);
         var embeddingGateway = new EmbeddingGateway(dataSource);
         var hybrid = new HybridSearchService(bm25Gateway, embeddingGateway);
