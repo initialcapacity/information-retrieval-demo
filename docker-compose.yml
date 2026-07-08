@@ -2,6 +2,7 @@ services:
   postgres:
     image: paradedb/paradedb:pg18
     container_name: dubjug-postgres
+    shm_size: "1gb"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

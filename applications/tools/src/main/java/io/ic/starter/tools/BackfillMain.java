@@ -16,7 +16,7 @@ import java.util.List;
  * index once the column is fully populated.
  */
 public class BackfillMain {
-    private static final int BATCH_SIZE = 256;
+    private static final int BATCH_SIZE = 128;
 
     public static void main(String[] args) {
         String databaseUrl = System.getenv("DATABASE_URL");
