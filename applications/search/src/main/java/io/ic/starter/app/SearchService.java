@@ -2,15 +2,19 @@ package io.ic.starter.app;
 
 import io.ic.starter.catalog.ProductRecord;
 import io.ic.starter.catalog.ProductsGateway;
+import io.ic.starter.eval.FixtureLoader;
+import io.ic.starter.eval.FixtureQuery;
 import io.ic.starter.search.Bm25Gateway;
 import io.ic.starter.search.EmbeddingGateway;
 import io.ic.starter.search.HybridSearchService;
 import io.ic.starter.search.SearchResult;
 
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Builds the three-column comparison for a query: BM25, dense, hybrid. Runs each
@@ -29,6 +33,8 @@ public class SearchService {
     private final ProductsGateway productsGateway;
     private final QueryEmbeddingResolver embeddingResolver;
     private final FixtureIndex fixtureIndex;
+    private final List<SearchView.LeanGroup> pickerGroups;
+    private final int pickerTotal;
 
     public SearchService(Bm25Gateway bm25Gateway, EmbeddingGateway embeddingGateway,
                          HybridSearchService hybridService, ProductsGateway productsGateway,
@@ -39,10 +45,12 @@ public class SearchService {
         this.productsGateway = productsGateway;
         this.embeddingResolver = embeddingResolver;
         this.fixtureIndex = fixtureIndex;
+        this.pickerGroups = buildPickerGroups();
+        this.pickerTotal = pickerGroups.stream().mapToInt(SearchView.LeanGroup::count).sum();
     }
 
     public SearchView blank() {
-        return new SearchView("", false, false, null, null, List.of(), HERO_QUERIES);
+        return new SearchView("", false, false, null, null, List.of(), HERO_QUERIES, pickerTotal, pickerGroups);
     }
 
     public SearchView search(String query) {
@@ -59,7 +67,8 @@ public class SearchService {
         } catch (RuntimeException e) {
             // BM25 still renders; dense/hybrid need an embedding.
             var columns = List.of(column("BM25", "lexical", bm25, queryId));
-            return new SearchView(query, true, queryId != null, null, e.getMessage(), columns, HERO_QUERIES);
+            return new SearchView(query, true, queryId != null, null, e.getMessage(), columns, HERO_QUERIES,
+                    pickerTotal, pickerGroups);
         }
 
         List<SearchResult> dense = embeddingGateway.search(resolved.vector(), DISPLAY_K);
@@ -71,7 +80,42 @@ public class SearchService {
                 column("Dense", "semantic", dense, queryId),
                 column("Hybrid", "RRF k=60", hybrid, queryId)
         );
-        return new SearchView(query, true, queryId != null, resolved.source(), null, columns, HERO_QUERIES);
+        return new SearchView(query, true, queryId != null, resolved.source(), null, columns, HERO_QUERIES,
+                pickerTotal, pickerGroups);
+    }
+
+    /**
+     * Groups the labelled eval fixture by lean bucket for the query picker
+     * (display-only; does not touch the fixture, qrels, or eval). Rows are sorted
+     * by Exact count descending, matching the mockup.
+     */
+    private static List<SearchView.LeanGroup> buildPickerGroups() {
+        record Meta(String label, String desc) {
+        }
+        var meta = Map.of(
+                "keyword", new Meta("Keyword", "lexical wins"),
+                "semantic", new Meta("Semantic", "dense wins"),
+                "mixed", new Meta("Mixed", "hybrid wins")
+        );
+        Map<String, List<FixtureQuery>> byLean = new FixtureLoader().load().stream()
+                .collect(Collectors.groupingBy(FixtureQuery::lean));
+
+        var groups = new java.util.ArrayList<SearchView.LeanGroup>();
+        for (String lean : List.of("keyword", "semantic", "mixed")) {
+            List<FixtureQuery> bucket = byLean.getOrDefault(lean, List.of());
+            List<SearchView.PickerQuery> queries = bucket.stream()
+                    .sorted(Comparator.comparingInt(FixtureQuery::nExact).reversed()
+                            .thenComparing(FixtureQuery::query))
+                    .map(q -> new SearchView.PickerQuery(q.query(), category(q.queryClass()), q.nExact()))
+                    .toList();
+            Meta m = meta.get(lean);
+            groups.add(new SearchView.LeanGroup(lean, m.label(), m.desc(), queries.size(), queries));
+        }
+        return groups;
+    }
+
+    private static String category(String queryClass) {
+        return (queryClass == null || queryClass.isBlank()) ? "—" : queryClass;
     }
 
     private SearchView.Column column(String method, String subtitle, List<SearchResult> results, Long queryId) {

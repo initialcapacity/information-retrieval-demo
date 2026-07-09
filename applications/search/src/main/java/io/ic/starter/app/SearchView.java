@@ -12,7 +12,9 @@ public record SearchView(
         String embeddingSource,
         String error,
         List<Column> columns,
-        List<String> heroQueries
+        List<String> heroQueries,
+        int pickerTotal,
+        List<LeanGroup> pickerGroups
 ) {
     public record Column(String method, String subtitle, List<Result> results) {
     }
@@ -21,5 +23,12 @@ public record SearchView(
         public boolean relevant() {
             return relevance != null;
         }
+    }
+
+    /** A lean bucket in the labelled-query picker (keyword / semantic / mixed). */
+    public record LeanGroup(String lean, String label, String desc, int count, List<PickerQuery> queries) {
+    }
+
+    public record PickerQuery(String query, String category, int exact) {
     }
 }

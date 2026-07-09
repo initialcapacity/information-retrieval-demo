@@ -57,6 +57,67 @@
         .hero-links .lbl { font-family: var(--font-mono); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-muted); }
         .search-form { display: flex; gap: var(--space-4); flex-wrap: wrap; }
         .search-form input[type=search] { flex: 1; min-width: 320px; }
+        .hero-sep { width: 1px; align-self: stretch; background: var(--border); margin: 0 var(--space-2); }
+
+        /* ---------- Grouped labelled-query picker ---------- */
+        .qpicker { position: relative; }
+        .qpicker-trigger { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong);
+            font-family: var(--font-mono); font-weight: 600; gap: var(--space-3); }
+        .qpicker-trigger:hover { background: var(--surface-sunken); border-color: var(--text-muted); }
+        .qpicker.open .qpicker-trigger { border-color: var(--signal); box-shadow: 0 0 0 3px var(--focus-ring); background: var(--surface); }
+        .qpicker-trigger .caret { width: 14px; height: 14px; color: var(--text-muted); transition: transform 140ms ease; }
+        .qpicker.open .qpicker-trigger .caret { transform: rotate(180deg); color: var(--signal); }
+        .qpicker-trigger .n { color: var(--signal); }
+
+        .qpanel { position: absolute; top: calc(100% + 8px); left: 0; width: 520px; max-width: calc(100vw - 96px); z-index: 40;
+            background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg); overflow: hidden; display: none; }
+        .qpicker.open .qpanel { display: block; }
+
+        .qpanel-head { padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); }
+        .qpanel-head .title { font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; letter-spacing: var(--tracking-caps);
+            text-transform: uppercase; color: var(--text); display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+        .qpanel-head .title .meta { color: var(--text-light); font-weight: 400; letter-spacing: var(--tracking-wide); }
+        .qfilter { position: relative; margin-top: var(--space-3); }
+        .qfilter input { width: 100%; min-width: 0; height: 34px; padding-left: 34px; font-size: var(--fs-sm); border-color: var(--border); }
+        .qfilter svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-light); pointer-events: none; }
+
+        .qscroll { max-height: 430px; overflow-y: auto; overscroll-behavior: contain; }
+        .qscroll::-webkit-scrollbar { width: 10px; }
+        .qscroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--radius-full); border: 3px solid var(--surface); }
+
+        .qgroup-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: var(--space-3);
+            padding: var(--space-3) var(--space-5); background: var(--surface-sunken); border-bottom: 1px solid var(--border);
+            border-top: 1px solid var(--border); }
+        .qgroup:first-child .qgroup-head { border-top: none; }
+        .qtag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 700;
+            letter-spacing: var(--tracking-caps); text-transform: uppercase; padding: 3px 8px; border-radius: var(--radius-xs); border: 1px solid; }
+        .qtag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .qtag.keyword { color: var(--signal); background: var(--signal-bg); border-color: color-mix(in srgb, var(--signal) 40%, transparent); }
+        .qtag.semantic { color: var(--accent); background: var(--warning-bg); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+        .qtag.mixed { color: var(--navy-700); background: #eef1f6; border-color: color-mix(in srgb, var(--navy-700) 32%, transparent); }
+        [data-theme="dark"] .qtag.mixed { color: var(--navy-200); background: var(--surface-raised); border-color: var(--border-strong); }
+        .qgroup-head .desc { font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-muted); }
+        .qgroup-head .count { margin-left: auto; font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted); }
+
+        .qitem { display: flex; align-items: center; gap: var(--space-4); width: 100%; text-align: left; padding: var(--space-3) var(--space-5);
+            background: transparent; border: none; border-bottom: 1px solid var(--border-muted); border-radius: 0; height: auto;
+            font-weight: 400; color: var(--text); cursor: pointer; transition: background 100ms; }
+        .qitem:hover, .qitem:focus-visible { background: var(--signal-bg); outline: none; }
+        .qitem .q { font-family: var(--font-sans); font-size: var(--fs-md); color: var(--text); flex: 1; min-width: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .qitem .qcat { font-family: var(--font-mono); font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+            color: var(--text-light); flex-shrink: 0; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .qitem .qn { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-muted); flex-shrink: 0; min-width: 64px; text-align: right; }
+        .qitem .qn b { color: var(--success); font-weight: 700; }
+
+        .qpanel-foot { padding: var(--space-3) var(--space-5); border-top: 1px solid var(--border); background: var(--surface-sunken);
+            font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-muted); display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
+        .qpanel-foot .k { display: inline-flex; align-items: center; gap: 6px; }
+        .qpanel-foot .k::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+        .qpanel-foot .k.keyword::before { background: var(--signal); }
+        .qpanel-foot .k.semantic::before { background: var(--accent); }
+        .qpanel-foot .k.mixed::before { background: var(--navy-700); }
     </style>
 </head>
 <body>
