@@ -59,6 +59,10 @@
         .search-form input[type=search] { flex: 1; min-width: 320px; }
         .eval-note { font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--text); max-width: 74ch; margin-bottom: var(--space-4); }
         .eval-caption { font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--text-muted); max-width: 74ch; margin-bottom: var(--space-4); }
+        /* Eval emphasis: fill the winning row/cell rather than just drawing a left bar. */
+        .table .row-header td { background: color-mix(in srgb, var(--signal) 16%, var(--surface)); border-left: none; }
+        .table .row-header td:first-child { border-left: 3px solid var(--signal); }
+        .table td.win { background: color-mix(in srgb, var(--signal) 16%, var(--surface)); font-weight: 700; color: var(--text); }
         .hero-sep { width: 1px; align-self: stretch; background: var(--border); margin: 0 var(--space-2); }
 
         /* ---------- Grouped labelled-query picker ---------- */

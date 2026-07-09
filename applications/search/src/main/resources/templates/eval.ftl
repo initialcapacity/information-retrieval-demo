@@ -52,12 +52,18 @@
                     </thead>
                     <tbody>
                         <#list mode.buckets() as b>
+                            <#assign fBm = b.metrics()[0].f1()>
+                            <#assign fDn = b.metrics()[1].f1()>
+                            <#assign fHy = b.metrics()[2].f1()>
+                            <#assign fMax = fBm>
+                            <#if fDn gt fMax><#assign fMax = fDn></#if>
+                            <#if fHy gt fMax><#assign fMax = fHy></#if>
                             <tr>
                                 <td>${b.lean()}</td>
                                 <td class="num">${b.queryCount()}</td>
-                                <td class="num">${b.metrics()[0].f1()?string["0.0000"]}</td>
-                                <td class="num">${b.metrics()[1].f1()?string["0.0000"]}</td>
-                                <td class="num">${b.metrics()[2].f1()?string["0.0000"]}</td>
+                                <td class="num<#if fBm gte fMax> win</#if>">${fBm?string["0.0000"]}</td>
+                                <td class="num<#if fDn gte fMax> win</#if>">${fDn?string["0.0000"]}</td>
+                                <td class="num<#if fHy gte fMax> win</#if>">${fHy?string["0.0000"]}</td>
                                 <td class="num">${b.metrics()[0].recall()?string["0.0000"]}</td>
                                 <td class="num">${b.metrics()[1].recall()?string["0.0000"]}</td>
                                 <td class="num">${b.metrics()[2].recall()?string["0.0000"]}</td>
