@@ -74,7 +74,7 @@
     <#if view.submitted()>
         <div class="row" style="margin-bottom: var(--space-5); gap: var(--space-3);">
             <#if view.fixtureQuery()>
-                <span class="badge signal dot">fixture query - relevance labelled</span>
+                <span class="badge signal dot">relevance labelled</span>
             <#else>
                 <span class="badge">ad-hoc query - no relevance labels</span>
             </#if>
