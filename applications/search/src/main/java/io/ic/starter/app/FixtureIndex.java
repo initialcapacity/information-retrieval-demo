@@ -2,6 +2,7 @@ package io.ic.starter.app;
 
 import io.ic.starter.eval.FixtureLoader;
 import io.ic.starter.eval.FixtureQuery;
+import io.ic.starter.search.QueryText;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Maps a typed query back to a fixture query (by normalized text) and answers
@@ -32,14 +34,26 @@ public class FixtureIndex {
 
     public FixtureIndex() {
         for (FixtureQuery query : new FixtureLoader().load()) {
-            queryIdByText.put(normalize(query.query()), query.queryId());
+            queryIdByText.put(QueryText.normalize(query.query()), query.queryId());
         }
-        loadQrels();
-        loadHeroQrels();
+        // Fixture qrels (required): query_id, product_id, label.
+        readQrels(QRELS_RESOURCE, true, f -> {
+            long queryId = Long.parseLong(f[0].trim());
+            long productId = Long.parseLong(f[1].trim());
+            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(productId, f[2].trim());
+        });
+        // Hero qrels (optional) carry the query text, so each row also registers
+        // the text->id mapping: query_id, query, product_id, label.
+        readQrels(HERO_QRELS_RESOURCE, false, f -> {
+            long queryId = Long.parseLong(f[0].trim());
+            long productId = Long.parseLong(f[2].trim());
+            queryIdByText.put(QueryText.normalize(f[1]), queryId);
+            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(productId, f[3].trim());
+        });
     }
 
     public Optional<Long> queryId(String text) {
-        return Optional.ofNullable(queryIdByText.get(normalize(text)));
+        return Optional.ofNullable(queryIdByText.get(QueryText.normalize(text)));
     }
 
     /** Returns "Exact", "Partial", or null. */
@@ -47,10 +61,13 @@ public class FixtureIndex {
         return relevanceByQuery.getOrDefault(queryId, Map.of()).get(productId);
     }
 
-    private void loadQrels() {
-        try (InputStream stream = FixtureIndex.class.getResourceAsStream(QRELS_RESOURCE)) {
+    private void readQrels(String resource, boolean required, Consumer<String[]> onRow) {
+        try (InputStream stream = FixtureIndex.class.getResourceAsStream(resource)) {
             if (stream == null) {
-                throw new IllegalStateException("Missing " + QRELS_RESOURCE + " on classpath");
+                if (required) {
+                    throw new IllegalStateException("Missing " + resource + " on classpath");
+                }
+                return;
             }
             var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             reader.readLine(); // header
@@ -59,45 +76,10 @@ public class FixtureIndex {
                 if (line.isBlank()) {
                     continue;
                 }
-                String[] f = line.split("\t", -1);
-                long queryId = Long.parseLong(f[0].trim());
-                long productId = Long.parseLong(f[1].trim());
-                relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(productId, f[2].trim());
+                onRow.accept(line.split("\t", -1));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    /**
-     * Hero qrels carry the query text (they are not in the fixture), so each row
-     * registers both the text->id mapping and the product relevance.
-     */
-    private void loadHeroQrels() {
-        try (InputStream stream = FixtureIndex.class.getResourceAsStream(HERO_QRELS_RESOURCE)) {
-            if (stream == null) {
-                return; // hero qrels are optional
-            }
-            var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-            reader.readLine(); // header
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
-                }
-                String[] f = line.split("\t", -1);
-                long queryId = Long.parseLong(f[0].trim());
-                String query = f[1];
-                long productId = Long.parseLong(f[2].trim());
-                queryIdByText.put(normalize(query), queryId);
-                relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(productId, f[3].trim());
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static String normalize(String text) {
-        return text == null ? "" : text.trim().toLowerCase().replaceAll("\\s+", " ");
     }
 }

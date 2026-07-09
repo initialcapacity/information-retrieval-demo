@@ -3,6 +3,7 @@ package io.ic.starter.app;
 import io.ic.starter.eval.FixtureLoader;
 import io.ic.starter.eval.FixtureQuery;
 import io.ic.starter.search.EmbeddingClient;
+import io.ic.starter.search.QueryText;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class QueryEmbeddingResolver {
     }
 
     public Resolved resolve(String queryText) {
-        float[] cached = cachedByText.get(normalize(queryText));
+        float[] cached = cachedByText.get(QueryText.normalize(queryText));
         if (cached != null) {
             return new Resolved(cached, "cached");
         }
@@ -59,14 +60,14 @@ public class QueryEmbeddingResolver {
         eachCacheLine(FIXTURE_CACHE_RESOURCE, (key, vector) -> {
             String text = textById.get(Long.parseLong(key));
             if (text != null) {
-                cachedByText.put(normalize(text), vector);
+                cachedByText.put(QueryText.normalize(text), vector);
             }
         });
     }
 
     /** Hero cache is keyed by the normalized query text directly (out-of-band queries). */
     private void loadHeroCache() {
-        eachCacheLine(HERO_CACHE_RESOURCE, (key, vector) -> cachedByText.put(normalize(key), vector));
+        eachCacheLine(HERO_CACHE_RESOURCE, (key, vector) -> cachedByText.put(QueryText.normalize(key), vector));
     }
 
     private void eachCacheLine(String resource, java.util.function.BiConsumer<String, float[]> consumer) {
@@ -95,9 +96,5 @@ public class QueryEmbeddingResolver {
             vector[i] = Float.parseFloat(parts[i]);
         }
         return vector;
-    }
-
-    private static String normalize(String text) {
-        return text == null ? "" : text.trim().toLowerCase().replaceAll("\\s+", " ");
     }
 }

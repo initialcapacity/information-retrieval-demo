@@ -22,14 +22,6 @@ public class HybridSearchService {
         this.fusion = fusion;
     }
 
-    public List<SearchResult> bm25(String query, int limit) {
-        return bm25Gateway.search(query, limit);
-    }
-
-    public List<SearchResult> dense(float[] queryEmbedding, int limit) {
-        return embeddingGateway.search(queryEmbedding, limit);
-    }
-
     /**
      * Fuses BM25 and dense results. Each method retrieves {@code candidateDepth}
      * results before fusion; the fused list is returned in full (truncate at the

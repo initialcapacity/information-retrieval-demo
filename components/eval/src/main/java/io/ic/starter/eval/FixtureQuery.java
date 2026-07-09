@@ -5,7 +5,6 @@ public record FixtureQuery(
         String query,
         String queryClass,
         int nExact,
-        boolean hasSpec,
         String lean
 ) {
 }

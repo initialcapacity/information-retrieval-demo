@@ -1,6 +1,7 @@
 package io.ic.starter.tools;
 
 import io.ic.starter.search.OpenAiEmbeddingClient;
+import io.ic.starter.search.QueryText;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -33,7 +34,7 @@ public class CacheHeroQueriesMain {
 
         var lines = new ArrayList<String>(HERO_QUERIES.size());
         for (int i = 0; i < HERO_QUERIES.size(); i++) {
-            lines.add(normalize(HERO_QUERIES.get(i)) + "\t" + toCsv(vectors.get(i)));
+            lines.add(QueryText.normalize(HERO_QUERIES.get(i)) + "\t" + toCsv(vectors.get(i)));
         }
         try {
             Files.createDirectories(outFile.getParent());
@@ -53,9 +54,5 @@ public class CacheHeroQueriesMain {
             sb.append(vector[i]);
         }
         return sb.toString();
-    }
-
-    private static String normalize(String text) {
-        return text.trim().toLowerCase().replaceAll("\\s+", " ");
     }
 }

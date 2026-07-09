@@ -36,7 +36,6 @@ public class FixtureLoader {
                         unquote(f[1]),
                         unquote(f[2]),
                         Integer.parseInt(f[3].trim()),
-                        Boolean.parseBoolean(f[7].trim()),
                         f[8].trim()
                 ));
             }

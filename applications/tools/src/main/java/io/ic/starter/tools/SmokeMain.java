@@ -12,8 +12,9 @@ import java.util.List;
 
 /**
  * Hero-query smoke test: prints BM25 vs dense top results side by side so the
- * opposite failure modes are visible without the metrics. Embeds the query live
- * (requires OPENAI_API_KEY) unless a cached vector is available.
+ * opposite failure modes are visible without the metrics. Always embeds each
+ * query live via OpenAI (requires OPENAI_API_KEY); it does not read the
+ * query-embedding cache. Without a key, the dense column is skipped.
  */
 public class SmokeMain {
     private static final String[] HERO_QUERIES = {
