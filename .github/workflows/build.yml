@@ -9,9 +9,9 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: dubjug_development
+          POSTGRES_DB: ir_demo_development
         options: >-
-          --health-cmd "pg_isready -U postgres -d dubjug_development"
+          --health-cmd "pg_isready -U postgres -d ir_demo_development"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -27,7 +27,7 @@ jobs:
       - name: "Create test template database"
         env:
           PGPASSWORD: postgres
-        run: psql --host localhost --username postgres --dbname postgres < databases/create_databases.sql
+        run: psql --host localhost --port 5433 --username postgres --dbname postgres < databases/create_databases.sql
       - name: "Migrate"
         run: ./gradlew :databases:catalog:migrate
       - name: "Build"

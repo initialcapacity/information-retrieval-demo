@@ -1,4 +1,4 @@
-rootProject.name = "dubjug-search"
+rootProject.name = "information-retrieval-demo"
 
 include(
     "applications:tools",

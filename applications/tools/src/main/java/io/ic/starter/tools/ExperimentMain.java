@@ -71,7 +71,7 @@ public class ExperimentMain {
 
         var runner = new EvalRunner();
         var out = new StringBuilder();
-        out.append("# DubJUG search eval experiments\n\n");
+        out.append("# Information retrieval eval experiments\n\n");
         out.append("- Corpus: WANDS, 42,994 products; 116 fixture queries.\n");
         out.append("- Embeddings: OpenAI text-embedding-3-small (1536), field = name+description+features.\n");
         out.append("- Retrieval depth ").append(DEPTH).append(", hnsw.ef_search=400. RRF default k=60.\n\n");

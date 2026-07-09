@@ -1,21 +1,24 @@
+name: information-retrieval-demo
+
 services:
   postgres:
     image: paradedb/paradedb:pg18
-    container_name: dubjug-postgres
+    container_name: ir-demo-postgres
     shm_size: "1gb"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: dubjug_development
+      POSTGRES_DB: ir_demo_development
     ports:
       - "5433:5432"
     volumes:
-      - dubjug_pgdata:/var/lib/postgresql
+      - ir_demo_pgdata:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d dubjug_development"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ir_demo_development"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  dubjug_pgdata:
+  ir_demo_pgdata:
+    name: ir_demo_pgdata

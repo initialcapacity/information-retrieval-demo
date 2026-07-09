@@ -1,6 +1,6 @@
 <#import "template.ftl" as layout>
 <#-- @ftlvariable name="view" type="io.ic.starter.app.SearchView" -->
-<@layout.layout active="search" title="Search - DubJUG">
+<@layout.layout active="search" title="Search - Retrieval Playground">
 <section>
     <header>
         <p class="eyebrow"><span class="eyebrow-inner">live retrieval</span></p>

@@ -1,4 +1,4 @@
-# DubJUG Search Demo
+# Information Retrieval Demo
 
 A Java search demo comparing BM25 (lexical), dense embeddings (semantic), and their RRF hybrid over the [WANDS](https://github.com/wayfair/WANDS) product catalogue. Built for the DubJUG talk.
 

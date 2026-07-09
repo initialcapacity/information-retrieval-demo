@@ -35,8 +35,8 @@ public class TestDatabase implements Closeable {
         try (var superDataSource = DataSourceFactory.create(SUPER_URL, 1)) {
             var superDatabaseTemplate = new TestDatabaseTemplate(superDataSource);
 
-            var testDatabaseName = "dubjug_test_" + new Random().nextInt(10_000_000);
-            superDatabaseTemplate.execute("create database " + testDatabaseName + " template dubjug_test");
+            var testDatabaseName = "ir_demo_test_" + new Random().nextInt(10_000_000);
+            superDatabaseTemplate.execute("create database " + testDatabaseName + " template ir_demo_test");
 
             HikariDataSource dataSource = DataSourceFactory
                     .create("jdbc:postgresql://localhost:5433/" + testDatabaseName + "?user=postgres&password=postgres", 10);

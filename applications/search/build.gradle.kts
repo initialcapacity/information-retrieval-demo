@@ -27,7 +27,7 @@ tasks {
     }
 
     register<JavaExec>("run") {
-        group = "dubjug"
+        group = "ir-demo"
         classpath = sourceSets["main"].runtimeClasspath
         mainClass.set("Main")
         workingDir = rootProject.projectDir

@@ -1,4 +1,4 @@
-# DubJUG search eval experiments
+# Information retrieval eval experiments
 
 - Corpus: WANDS, 42,994 products; 116 fixture queries.
 - Embeddings: OpenAI text-embedding-3-small (1536), field = name+description+features.

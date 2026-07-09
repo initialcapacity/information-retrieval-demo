@@ -22,12 +22,12 @@ tasks {
 
     register<JavaExec>("migrateDev") {
         classpath = files(shadowJar)
-        environment("DATABASE_URL", "jdbc:postgresql://localhost:5433/dubjug_development?user=postgres&password=postgres")
+        environment("DATABASE_URL", "jdbc:postgresql://localhost:5433/ir_demo_development?user=postgres&password=postgres")
     }
 
     register<JavaExec>("migrateTest") {
         classpath = files(shadowJar)
-        environment("DATABASE_URL", "jdbc:postgresql://localhost:5433/dubjug_test?user=postgres&password=postgres")
+        environment("DATABASE_URL", "jdbc:postgresql://localhost:5433/ir_demo_test?user=postgres&password=postgres")
     }
 
     register("migrate") {

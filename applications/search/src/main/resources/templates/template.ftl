@@ -1,4 +1,4 @@
-<#macro layout active title="DubJUG Search">
+<#macro layout active title="Retrieval Playground">
 <html lang="en">
 <head>
     <meta charset="utf-8">

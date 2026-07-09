@@ -1,6 +1,6 @@
 <#import "template.ftl" as layout>
 <#-- @ftlvariable name="report" type="io.ic.starter.eval.EvalReport" -->
-<@layout.layout active="eval" title="Eval - DubJUG">
+<@layout.layout active="eval" title="Eval - Retrieval Playground">
 <section>
     <header>
         <p class="eyebrow"><span class="eyebrow-inner">precision / recall / f-score</span></p>

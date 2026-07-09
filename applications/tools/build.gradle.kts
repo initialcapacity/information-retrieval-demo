@@ -19,7 +19,7 @@ dependencies {
 
 fun registerTool(taskName: String, main: String) {
     tasks.register<JavaExec>(taskName) {
-        group = "dubjug"
+        group = "ir-demo"
         classpath = sourceSets["main"].runtimeClasspath
         mainClass.set(main)
         workingDir = rootProject.projectDir

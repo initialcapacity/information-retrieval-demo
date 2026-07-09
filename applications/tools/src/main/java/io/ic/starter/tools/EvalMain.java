@@ -60,7 +60,7 @@ public class EvalMain {
         var runner = new EvalRunner();
 
         System.out.println("=".repeat(60));
-        System.out.println("DubJUG search eval  |  WANDS  |  " + queries.size() + " fixture queries");
+        System.out.println("Information retrieval eval  |  WANDS  |  " + queries.size() + " fixture queries");
         System.out.println("relevance: Exact + Partial (default)");
         System.out.println("=".repeat(60));
 
