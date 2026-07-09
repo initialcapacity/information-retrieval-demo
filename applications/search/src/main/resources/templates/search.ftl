@@ -17,7 +17,7 @@
         <div class="hero-links">
             <span class="lbl">hero queries:</span>
             <#list view.heroQueries() as q>
-                <a class="button secondary sm" href="/?q=${q?url('UTF-8')}">${q}</a>
+                <a class="button secondary" href="/?q=${q?url('UTF-8')}">${q}</a>
             </#list>
         </div>
     </header>

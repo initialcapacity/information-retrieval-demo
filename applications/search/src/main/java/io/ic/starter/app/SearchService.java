@@ -17,7 +17,7 @@ import java.util.Set;
  * method live against Postgres and annotates results with fixture relevance.
  */
 public class SearchService {
-    private static final int TOP_K = 10;
+    private static final int DISPLAY_K = 5;      // results shown per column on stage; the eval k is separate
     private static final int CANDIDATE_DEPTH = 100;
 
     private static final List<String> HERO_QUERIES = List.of(
@@ -51,7 +51,7 @@ public class SearchService {
         }
         Long queryId = fixtureIndex.queryId(query).orElse(null);
 
-        List<SearchResult> bm25 = bm25Gateway.search(query, TOP_K);
+        List<SearchResult> bm25 = bm25Gateway.search(query, DISPLAY_K);
 
         QueryEmbeddingResolver.Resolved resolved;
         try {
@@ -62,9 +62,9 @@ public class SearchService {
             return new SearchView(query, true, queryId != null, null, e.getMessage(), columns, HERO_QUERIES);
         }
 
-        List<SearchResult> dense = embeddingGateway.search(resolved.vector(), TOP_K);
+        List<SearchResult> dense = embeddingGateway.search(resolved.vector(), DISPLAY_K);
         List<SearchResult> hybrid = hybridService
-                .hybrid(query, resolved.vector(), CANDIDATE_DEPTH).stream().limit(TOP_K).toList();
+                .hybrid(query, resolved.vector(), CANDIDATE_DEPTH).stream().limit(DISPLAY_K).toList();
 
         var columns = List.of(
                 column("BM25", "lexical", bm25, queryId),

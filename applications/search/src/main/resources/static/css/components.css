@@ -409,10 +409,10 @@ input::placeholder, textarea::placeholder { color: var(--text-light); }
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 20px;
-  padding: 2px var(--space-2);
+  min-height: 24px;
+  padding: 3px var(--space-3);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
@@ -831,7 +831,7 @@ input::placeholder, textarea::placeholder { color: var(--text-light); }
   vertical-align: middle;
 }
 .table th {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
@@ -849,6 +849,9 @@ input::placeholder, textarea::placeholder { color: var(--text-light); }
 }
 .table .row-header.potential td { border-left-color: var(--amber-600); background: #fffbeb; color: var(--amber-600); }
 [data-theme="dark"] .table .row-header.potential td { background: rgba(217,119,6,0.1); }
+
+/* Wide tables scroll within their card rather than pushing the page sideways. */
+.card:has(> .table) { overflow-x: auto; }
 
 /* ---------- WEEK-GRID (Capacity signature) ----------
    Refactored to (X): bare element selectors with simple-class modifiers
