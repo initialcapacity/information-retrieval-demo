@@ -15,7 +15,13 @@
     <#list report.modes() as mode>
         <div class="subsection">
             <div class="subsection-title">${mode.name()} <small>relevance binarization</small></div>
+            <#if mode.name()?contains("Partial")>
+                <p class="eval-note">Both exact and partial matches count as relevant. That enlarges the relevant set and caps recall at k=${report.k()}, so the three methods bunch together and the gaps narrow.</p>
+            <#else>
+                <p class="eval-note">Only products judged an exact match count as relevant. It is the strict bar, and where the pattern is clearest: F1 rises from BM25 to dense to hybrid.</p>
+            </#if>
 
+            <p class="eval-caption">Overall quality per method: precision, recall, and F1 at k=${report.k()}, macro-averaged across every fixture query. The hybrid row is highlighted.</p>
             <div class="card" style="margin-bottom: var(--space-6);">
                 <table class="table">
                     <thead>
@@ -34,6 +40,7 @@
                 </table>
             </div>
 
+            <p class="eval-caption">The same scores split by query type. Keyword queries reward exact matching, semantic queries reward embeddings, and mixed queries sit in between, so the balance between methods shifts across the rows.</p>
             <div class="card">
                 <table class="table">
                     <thead>

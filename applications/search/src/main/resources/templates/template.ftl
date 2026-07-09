@@ -57,6 +57,8 @@
         .hero-links .lbl { font-family: var(--font-mono); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-muted); }
         .search-form { display: flex; gap: var(--space-4); flex-wrap: wrap; }
         .search-form input[type=search] { flex: 1; min-width: 320px; }
+        .eval-note { font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--text); max-width: 74ch; margin-bottom: var(--space-4); }
+        .eval-caption { font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--text-muted); max-width: 74ch; margin-bottom: var(--space-4); }
         .hero-sep { width: 1px; align-self: stretch; background: var(--border); margin: 0 var(--space-2); }
 
         /* ---------- Grouped labelled-query picker ---------- */
