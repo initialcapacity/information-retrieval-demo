@@ -53,7 +53,7 @@
         .result-row .name { font-size: var(--fs-lg); line-height: var(--lh-snug); }
         .result-row .cat { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin-top: var(--space-1); }
         .result-row.hit { background: color-mix(in srgb, var(--success) 9%, transparent); }
-        .hero-links { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-5); align-items: center; }
+        .hero-links { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-5); align-items: center; margin-bottom: var(--space-4); }
         .hero-links .lbl { font-family: var(--font-mono); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-muted); }
         .search-form { display: flex; gap: var(--space-4); flex-wrap: wrap; }
         .search-form input[type=search] { flex: 1; min-width: 320px; }
