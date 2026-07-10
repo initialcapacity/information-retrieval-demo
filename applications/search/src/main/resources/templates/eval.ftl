@@ -6,7 +6,7 @@
         <p class="eyebrow"><span class="eyebrow-inner">precision / recall / f-score</span></p>
         <h2>The F-score <em>climbs</em>: BM25 &rarr; dense &rarr; hybrid</h2>
         <p class="lede">
-            Macro-averaged over 116 WANDS fixture queries at k=${report.k()},
+            Macro-averaged over 56 fixture queries against the PostgreSQL manual at k=${report.k()},
             RRF k=${report.rrfK()}, hnsw.ef_search=${report.efSearch()}.
             Real numbers from the committed eval run.
         </p>
@@ -16,9 +16,9 @@
         <div class="subsection">
             <div class="subsection-title">${mode.name()} <small>relevance binarization</small></div>
             <#if mode.name()?contains("Partial")>
-                <p class="eval-note">Both exact and partial matches count as relevant. That enlarges the relevant set and caps recall at k=${report.k()}, so the three methods bunch together and the gaps narrow.</p>
+                <p class="eval-note">Sections merely related to the query also count as relevant. That enlarges the relevant set and caps recall at k=${report.k()}, so the three methods bunch together and the gaps narrow.</p>
             <#else>
-                <p class="eval-note">Only products judged an exact match count as relevant. It is the strict bar, and where the pattern is clearest: F1 rises from BM25 to dense to hybrid.</p>
+                <p class="eval-note">Only sections judged to answer the query count as relevant. It is the strict bar, and where the pattern is clearest: F1 rises from BM25 to dense to hybrid.</p>
             </#if>
 
             <p class="eval-caption">Overall quality per method: precision, recall, and F1 at k=${report.k()}, macro-averaged across every fixture query. The hybrid row is highlighted.</p>

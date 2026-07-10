@@ -19,7 +19,7 @@ public record SearchView(
     public record Column(String method, String subtitle, List<Result> results) {
     }
 
-    public record Result(int rank, long productId, String name, String category, String relevance) {
+    public record Result(int rank, long chunkId, String name, String category, String relevance) {
         public boolean relevant() {
             return relevance != null;
         }

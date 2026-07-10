@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 /**
  * Maps a typed query back to a fixture query (by normalized text) and answers
- * relevance for a product under that query, using the committed fixture qrels
+ * relevance for a chunk under that query, using the committed fixture qrels
  * (Exact + Partial). All data is read from the classpath - no network, no DB.
  *
  * Also loads hero qrels: relevance labels for out-of-band demo queries (e.g.
@@ -36,19 +36,19 @@ public class FixtureIndex {
         for (FixtureQuery query : new FixtureLoader().load()) {
             queryIdByText.put(QueryText.normalize(query.query()), query.queryId());
         }
-        // Fixture qrels (required): query_id, product_id, label.
+        // Fixture qrels (required): query_id, chunk_id, label.
         readQrels(QRELS_RESOURCE, true, f -> {
             long queryId = Long.parseLong(f[0].trim());
-            long productId = Long.parseLong(f[1].trim());
-            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(productId, f[2].trim());
+            long chunkId = Long.parseLong(f[1].trim());
+            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(chunkId, f[2].trim());
         });
         // Hero qrels (optional) carry the query text, so each row also registers
-        // the text->id mapping: query_id, query, product_id, label.
+        // the text->id mapping: query_id, query, chunk_id, label.
         readQrels(HERO_QRELS_RESOURCE, false, f -> {
             long queryId = Long.parseLong(f[0].trim());
-            long productId = Long.parseLong(f[2].trim());
+            long chunkId = Long.parseLong(f[2].trim());
             queryIdByText.put(QueryText.normalize(f[1]), queryId);
-            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(productId, f[3].trim());
+            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(chunkId, f[3].trim());
         });
     }
 
@@ -57,8 +57,8 @@ public class FixtureIndex {
     }
 
     /** Returns "Exact", "Partial", or null. */
-    public String relevance(long queryId, long productId) {
-        return relevanceByQuery.getOrDefault(queryId, Map.of()).get(productId);
+    public String relevance(long queryId, long chunkId) {
+        return relevanceByQuery.getOrDefault(queryId, Map.of()).get(chunkId);
     }
 
     private void readQrels(String resource, boolean required, Consumer<String[]> onRow) {

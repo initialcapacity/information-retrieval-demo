@@ -36,7 +36,7 @@ public class EvalMain {
 
     public static void main(String[] args) {
         String databaseUrl = System.getenv("DATABASE_URL");
-        Path labelCsv = Path.of(args.length > 0 ? args[0] : "data/wands/label.csv");
+        Path labelCsv = Path.of(args.length > 0 ? args[0] : "data/pgdocs/qrels.tsv");
         Path cacheFile = Path.of(args.length > 1 ? args[1] : "data/query-embeddings.tsv");
 
         // Raise HNSW ef_search well above the candidate depth: the pgvector default
@@ -60,7 +60,7 @@ public class EvalMain {
         var runner = new EvalRunner();
 
         System.out.println("=".repeat(60));
-        System.out.println("Information retrieval eval  |  WANDS  |  " + queries.size() + " fixture queries");
+        System.out.println("Information retrieval eval  | pgdocs |  " + queries.size() + " fixture queries");
         System.out.println("relevance: Exact + Partial (default)");
         System.out.println("=".repeat(60));
 

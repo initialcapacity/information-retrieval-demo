@@ -26,11 +26,8 @@ fun registerTool(taskName: String, main: String) {
     }
 }
 
-registerTool("ingestWands", "io.ic.starter.tools.IngestMain")
+registerTool("ingestDocs", "io.ic.starter.tools.IngestMain")
 registerTool("backfillEmbeddings", "io.ic.starter.tools.BackfillMain")
 registerTool("cacheQueryEmbeddings", "io.ic.starter.tools.CacheQueryEmbeddingsMain")
-registerTool("cacheHeroQueries", "io.ic.starter.tools.CacheHeroQueriesMain")
 registerTool("runEval", "io.ic.starter.tools.EvalMain")
 registerTool("smoke", "io.ic.starter.tools.SmokeMain")
-registerTool("runExperiments", "io.ic.starter.tools.ExperimentMain")
-registerTool("fieldExperiment", "io.ic.starter.tools.FieldLengthExperimentMain")

@@ -2,7 +2,7 @@ package io.ic.starter.app;
 
 import com.zaxxer.hikari.HikariDataSource;
 import freemarker.template.Version;
-import io.ic.starter.catalog.ProductsGateway;
+import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.databasesupport.DataSourceFactory;
 import io.ic.starter.databasesupport.HealthGateway;
 import io.ic.starter.search.Bm25Gateway;
@@ -42,7 +42,7 @@ public class StarterSetup implements AppSetup {
 
         var bm25Gateway = new Bm25Gateway(dataSource);
         var embeddingGateway = new EmbeddingGateway(dataSource);
-        var productsGateway = new ProductsGateway(dataSource);
+        var chunksGateway = new ChunksGateway(dataSource);
         var hybridService = new HybridSearchService(bm25Gateway, embeddingGateway);
 
         EmbeddingClient embeddingClient = (env.openAiApiKey() == null || env.openAiApiKey().isBlank())
@@ -52,7 +52,7 @@ public class StarterSetup implements AppSetup {
         var fixtureIndex = new FixtureIndex();
 
         var searchService = new SearchService(
-                bm25Gateway, embeddingGateway, hybridService, productsGateway, embeddingResolver, fixtureIndex);
+                bm25Gateway, embeddingGateway, hybridService, chunksGateway, embeddingResolver, fixtureIndex);
         var searchController = new SearchController(searchService);
         var evalController = new EvalController(new EvalReportLoader().load());
         var healthGateway = new HealthGateway(dataSource);

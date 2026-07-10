@@ -19,16 +19,16 @@ public class Bm25Gateway {
 
     public List<SearchResult> search(String query, int limit) {
         return databaseTemplate.queryList(
-                "select product_id, paradedb.score(product_id) as score " +
-                        "from products " +
-                        "where product_id @@@ paradedb.match('search_text', ?) " +
-                        "order by score desc, product_id " +
+                "select chunk_id, paradedb.score(chunk_id) as score " +
+                        "from chunks " +
+                        "where chunk_id @@@ paradedb.match('search_text', ?) " +
+                        "order by score desc, chunk_id " +
                         "limit ?",
                 statement -> {
                     statement.setString(1, query);
                     statement.setInt(2, limit);
                 },
-                rs -> new SearchResult(rs.getLong("product_id"), rs.getDouble("score"))
+                rs -> new SearchResult(rs.getLong("chunk_id"), rs.getDouble("score"))
         );
     }
 }

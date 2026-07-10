@@ -1,117 +1,57 @@
 query_id	query	query_class	n_exact	bm25_recall_10	bm25_recall_20	frac_zero_overlap	has_spec	lean
-222	small loving roomtables		31	0.0	0.0	0.774	False	semantic
-453	midcentury tv unit	TV Stands & Entertainment Centers	25	0.0	0.0	0.0	False	semantic
-14	beds that have leds	Beds	20	0.0	0.0	0.7	False	semantic
-45	70s inspired furniture	Wall Art	20	0.0	0.0	0.8	True	semantic
-419	living room ideas	Living Room Sets	16	0.0	0.0	0.0	False	semantic
-291	front door cabinet with doors	Accent Chests / Cabinets	15	0.0	0.0	0.0	False	semantic
-20	foutains with brick look	Wallpaper	12	0.0	0.0	0.0	False	semantic
-314	body pillow and case	Sheets And Sheet Sets	11	0.0	0.0	0.0	False	semantic
-297	seat cushions desk	Chair Accessories	8	0.0	0.0	0.0	False	semantic
-359	french molding	Molding & Millwork	8	0.0	0.0	0.0	False	semantic
-285	"48"" sliding single track , barn door for laundry"	Barn Door Hardware	7	0.0	0.0	0.0	True	semantic
-295	end table between recliners	End Tables	6	0.0	0.0	0.0	False	semantic
-46	beach blue headboard	Headboards	5	0.0	0.0	0.0	False	semantic
-142	kitchen wooden stand	Specialty Serving	5	0.0	0.0	0.0	False	semantic
-190	benjiamino faux leather power lift chair	Recliners	5	0.0	0.0	0.0	False	semantic
-409	teal chair	Accent Chairs	40	0.025	0.025	0.05	False	semantic
-161	accent chair recliner	Recliners	38	0.026	0.026	0.0	False	semantic
-4	chair and a half recliner	Recliners	23	0.043	0.043	0.0	False	semantic
-162	turquoise chair	Accent Chairs	23	0.043	0.043	0.13	False	semantic
-401	glass lsmp shades	Lighting Shades	18	0.056	0.056	0.0	False	semantic
-145	liberty hardware francisco	Cabinet and Drawer Pulls	32	0.062	0.062	0.219	False	semantic
-39	door jewelry organizer	Jewelry Armoires	31	0.065	0.065	0.0	False	semantic
-403	wood rack wide	Log Storage	31	0.065	0.065	0.0	False	semantic
-292	decorative white pillow	Accent Pillows	12	0.083	0.083	0.0	False	semantic
-224	twin over full bunk beds cool desins		22	0.045	0.091	0.0	False	semantic
-407	huge bookcase	Bookcases	11	0.0	0.091	0.0	False	semantic
-198	cake plates with tops	Specialty Serving	10	0.0	0.1	0.0	False	semantic
-65	gnome fairy garden	Garden Accents	38	0.079	0.105	0.0	False	semantic
-129	wainscoting ideas	Molding & Millwork	28	0.107	0.107	0.893	False	semantic
-244	pull out sleeper loveseat	Sofas	9	0.111	0.111	0.0	False	semantic
-1	smart coffee table	Coffee & Cocktail Tables	8	0.125	0.125	0.0	False	semantic
-371	milk cow chair	Accent Chairs	8	0.125	0.125	0.25	False	semantic
-278	parakeet toy	Bird Play Stand & Playcenters	7	0.0	0.143	0.714	False	semantic
-402	modern farmhouse lighting semi flush mount	Flush Mount Lighting	7	0.0	0.143	0.0	False	semantic
-460	small wardrobe grey	Armoires & Wardrobes	7	0.0	0.143	0.429	False	semantic
-169	coffee bar buffet	Sideboards & Buffets	27	0.074	0.148	0.444	False	semantic
-189	big basket for dirty cloths	Hampers & Baskets	31	0.129	0.161	0.065	False	semantic
-36	laundry basket with wheels	Hampers & Baskets	37	0.135	0.189	0.0	False	semantic
-135	low profile loveseat recliner	Sofas	10	0.0	0.2	0.0	False	semantic
-54	wayfair sleep zippered	Mattress Covers and Protectors	5	0.2	0.2	0.0	False	semantic
-349	mud room sign	Wall Décor	5	0.2	0.2	0.2	False	semantic
-236	3 piece rug set with runners	Area Rugs	29	0.069	0.207	0.0	True	semantic
-293	wood floor protector mat	Chairmats	14	0.071	0.214	0.0	False	semantic
-62	7qt slow cooker	Crock Pots & Slow Cookers	9	0.111	0.222	0.0	True	semantic
-40	elegant executive chair	Office Chairs	40	0.125	0.225	0.0	False	semantic
-22	light and navy blue decorative pillow	Accent Pillows	22	0.136	0.227	0.0	False	semantic
-150	dumbbells	Free Weights	21	0.238	0.238	0.762	False	semantic
-147	drum picture	Wall Art	12	0.25	0.25	0.083	False	semantic
-155	floating bed	Beds	8	0.125	0.25	0.0	False	semantic
-216	music plug wall plate	Wall Plates	8	0.125	0.25	0.0	False	semantic
-86	aloe vera plant pot	Faux Plants and Trees	15	0.133	0.267	0.0	False	semantic
-50	tufted chair with gold legs	Accent Chairs	28	0.179	0.286	0.0	False	semantic
-204	fleur de lis living candle wall sconce bronze	Candle Holders	7	0.143	0.286	0.0	False	semantic
-18	chrome bathroom 4 light vanity light	Vanity Lighting	34	0.088	0.294	0.0	True	semantic
-215	king adjustable bed including mattress	Adjustable Beds	30	0.167	0.3	0.0	False	semantic
-205	ines shag rug w003096809	Area Rugs	12	0.5	0.667	0.0	True	keyword
-341	canvas map art	Wall Art	22	0.455	0.727	0.0	False	keyword
-176	mexican art	Wall Art	23	0.435	0.739	0.0	False	keyword
-246	clear shower curtain	Shower Curtains	12	0.333	0.75	0.0	False	keyword
-482	48 inch kitchen hood	Range Hoods	12	0.583	0.75	0.0	True	keyword
-391	"writing desk 48"""	Desks	8	0.5	0.75	0.0	True	keyword
-260	retractable side awning	Awnings	26	0.385	0.769	0.0	False	keyword
-365	gas detector	Smoke & CO Detectors	9	0.444	0.778	0.0	False	keyword
-361	kisner	Wall Art	25	0.4	0.8	0.0	False	keyword
-203	ge top loading washer 4.5	Washing Machines	5	0.0	0.8	0.0	True	keyword
-333	stainless steel colander set	Strainers, Colanders, & Salad Spinners	21	0.381	0.81	0.0	False	keyword
-307	real touch roses floral arrangements in glass vase	Faux Florals	6	0.833	0.833	0.0	False	keyword
-264	cortez pillow	Accent Pillows	15	0.667	1.0	0.0	False	keyword
-275	hinged square ottoman	Ottomans	13	0.615	1.0	0.0	False	keyword
-210	love seat wide faux leather tuxedo arm sofa	Sofas	9	0.667	1.0	0.0	False	keyword
-303	hawaii vintage art	Wall Art	8	0.75	1.0	0.0	False	keyword
-334	itchington butterfly	Dining Tables	6	1.0	1.0	0.0	False	keyword
-339	ruckus chair	Accent Chairs	6	1.0	1.0	0.0	False	keyword
-380	gravity feeder	Dog and Cat Bowls, Feeders & Accessories	6	1.0	1.0	0.0	False	keyword
-0	salon chair	Massage Chairs	39	0.154	0.308	0.0	False	mixed
-177	rustic storage cabinet	Office Storage Cabinets	16	0.125	0.312	0.0	False	mixed
-156	papasan chair frame only	Accent Chairs	19	0.158	0.316	0.0	False	mixed
-337	iittala bowl	Dining Bowls	39	0.256	0.333	0.0	False	mixed
-44	chrome shower head and valve	Shower Faucets & Systems	33	0.121	0.333	0.0	False	mixed
-178	almost heaven sauna	Saunas	24	0.083	0.333	0.042	False	mixed
-17	closet storage with zipper	Storage Drawers	21	0.19	0.333	0.048	False	mixed
-298	small woven pouf	Ottomans	9	0.222	0.333	0.0	False	mixed
-80	7 draw white dresser	Dressers & Chests	39	0.179	0.359	0.0	True	mixed
-91	industrial pipe dining  table	Dining Tables	8	0.25	0.375	0.0	False	mixed
-188	bedroom wall decor floral, multicolored with some teal (prints)	Wall Décor	8	0.375	0.375	0.0	False	mixed
-357	tall free standing pet gate	Pet Gates	34	0.118	0.382	0.0	False	mixed
-197	desk for kids tjat ate 10 year old		23	0.304	0.391	0.0	True	mixed
-247	beaded curtains	Curtains & Drapes	40	0.225	0.4	0.25	False	mixed
-253	antique brass faucet	Bathroom Sink Faucets	5	0.2	0.4	0.0	False	mixed
-104	flour and sugar containers	Canisters & Jars	12	0.333	0.417	0.0	False	mixed
-327	kohler purist brushed bronze	Bathroom Sink Faucets	9	0.222	0.444	0.0	False	mixed
-41	closet pull out valet rod	Closet Organizer Accessories	19	0.263	0.474	0.0	False	mixed
-459	tye dye duvet cover	Bedding Sets	19	0.211	0.474	0.0	False	mixed
-106	bed risers	Bed Accessories	36	0.278	0.5	0.028	False	mixed
-166	feather wall art	Wall Art	26	0.269	0.5	0.0	False	mixed
-109	hillsby oriental rug	Area Rugs	39	0.256	0.513	0.0	False	mixed
-248	surge protector	Lighting Accessories	39	0.256	0.513	0.051	False	mixed
-12	large spoon and fork wall decor	Wall Décor	28	0.321	0.536	0.0	False	mixed
-120	zodiac pillow	Accent Pillows	33	0.303	0.545	0.0	False	mixed
-240	eiffel tower wall art	Wall Art	33	0.273	0.545	0.0	False	mixed
-43	solid teak end table	End Tables	22	0.318	0.545	0.0	False	mixed
-8	home sweet home sign	Wall Décor	25	0.32	0.56	0.0	False	mixed
-185	lunch bag	Picnic Baskets & Coolers	34	0.294	0.588	0.088	False	mixed
-406	refrigerator with ice an water in door	Refrigerators	22	0.318	0.591	0.0	False	mixed
-289	coma inducer comforter king set	Bedding Sets	27	0.333	0.593	0.0	False	mixed
-384	dining table vinyl cloth	Dining Linens	20	0.25	0.6	0.0	False	mixed
-312	coat rack for bedroom	Coat Racks and Hooks	10	0.5	0.6	0.0	False	mixed
-408	girl reading statue	Garden Statues	31	0.29	0.613	0.0	False	mixed
-398	super bright lights	Pendant Lights	19	0.421	0.632	0.0	False	mixed
-7	driftwood mirror	Wall & Accent Mirrors	23	0.304	0.652	0.0	False	mixed
-355	argenteuil	Wall Art	30	0.333	0.667	0.0	False	mixed
-10	king poster bed	Beds	21	0.429	0.667	0.0	False	mixed
-183	farmhouse bread box	Food Storage & Dispensers	6	0.667	0.667	0.0	False	mixed
-346	nesting tray set	Decorative Trays	19	0.421	0.684	0.0	False	mixed
-352	amarillo	Wall Art	29	0.345	0.69	0.0	False	mixed
-69	wall sconce with usb port	Wall Sconces	13	0.462	0.692	0.0	False	mixed
+1	wal_level logical		6	1.0000	1.0000	0	0	keyword
+2	ERROR 23505 duplicate key value violates unique constraint		10	0.5000	0.8000	0	0	keyword
+3	pg_stat_activity idle in transaction		5	0.6000	1.0000	0	0	keyword
+4	shared_buffers sizing		2	0.5000	1.0000	0	0	keyword
+5	CREATE INDEX CONCURRENTLY		5	0.6000	1.0000	0	0	keyword
+6	pg_dump -Fc custom format		5	1.0000	1.0000	0	0	keyword
+7	max_wal_size checkpoint tuning		2	1.0000	1.0000	0	0	keyword
+8	EXPLAIN ANALYZE BUFFERS		5	0.8000	0.8000	0	0	keyword
+9	SQLSTATE 40001 serialization failure		10	0.5000	0.8000	0	0	keyword
+10	pg_basebackup streaming replication setup		3	0.6667	0.6667	0	0	keyword
+11	work_mem per query memory		3	0.6667	1.0000	0	0	keyword
+13	jsonb_path_query examples		3	1.0000	1.0000	0	0	keyword
+14	REINDEX CONCURRENTLY		7	0.8571	1.0000	0	0	keyword
+15	pg_hba.conf scram-sha-256		4	0.7500	1.0000	0	0	keyword
+17	tsvector tsquery match operator		4	0.5000	1.0000	0	0	keyword
+19	VACUUM FULL table rewrite		8	0.8750	1.0000	0	0	keyword
+20	pg_stat_statements track query performance		5	1.0000	1.0000	0	0	keyword
+21	my database keeps growing even though I delete rows		11	0.0000	0.0000	0	0	semantic
+22	postgres gets slower every week until I restart it		12	0.1667	0.2500	0	0	semantic
+23	stop one bad query from hogging the whole server		3	0.0000	0.0000	0	0	semantic
+24	can two users edit the same row at the same time		9	0.0000	0.0000	0	0	semantic
+25	make searches ignore accents and special characters		4	1.0000	1.0000	0	0	semantic
+26	copy my whole database to a new machine		16	0.1250	0.2500	0	0	semantic
+27	what happens to my data if the power goes out		14	0.1429	0.2857	0	0	semantic
+28	store data that has no fixed structure		6	0.0000	0.3333	0	0	semantic
+29	speed up a report that reads millions of rows		23	0.3478	0.4783	0	0	semantic
+30	keep a history of every change made to a table		4	0.2500	0.5000	0	0	semantic
+31	find rows where the text is spelled slightly wrong		5	0.0000	0.0000	0	0	semantic
+32	why is my query slow right after loading lots of data		9	0.3333	0.4444	0	0	semantic
+33	give a new teammate read only access to everything		5	0.0000	0.0000	0	0	semantic
+34	automatically get rid of data older than a year		3	0.0000	0.0000	0	0	semantic
+35	split a huge table into smaller pieces by month		8	0.1250	0.2500	0	0	semantic
+36	run postgres on two servers so one can take over		10	0.3000	0.5000	0	0	semantic
+37	decimal numbers come back rounded wrong		14	0.4286	0.6429	0	0	semantic
+38	save images and files inside the database		2	0.0000	0.5000	0	0	semantic
+39	writes are slow when many clients commit at once		9	0.4444	0.7778	0	0	semantic
+40	see what queries are running right now		6	0.1667	0.1667	0	0	semantic
+41	create an index without blocking writes		10	0.6000	0.7000	0	0	mixed
+43	out of disk space WAL files piling up		11	0.3636	0.3636	0	0	mixed
+44	backup a running database without downtime		20	0.3000	0.5000	0	0	mixed
+45	case insensitive text search		10	0.4000	0.7000	0	0	mixed
+46	deadlock detected error meaning		4	0.5000	1.0000	0	0	mixed
+47	uuid primary key generation		4	1.0000	1.0000	0	0	mixed
+48	foreign key on delete cascade behavior		2	1.0000	1.0000	0	0	mixed
+49	change a column type without rewriting the table		3	0.3333	0.6667	0	0	mixed
+50	permission denied for schema public		7	0.2857	0.5714	0	0	mixed
+51	index not used for LIKE query		6	0.6667	1.0000	0	0	mixed
+52	require ssl certificate verification for connections		11	0.7273	1.0000	0	0	mixed
+53	fastest way to bulk load millions of rows		9	0.3333	0.6667	0	0	mixed
+54	timestamp with time zone conversion		13	0.2308	0.6154	0	0	mixed
+55	row level security for multi tenant app		9	0.6667	0.7778	0	0	mixed
+56	insert on conflict do update upsert		7	0.7143	0.8571	0	0	mixed
+57	refresh materialized view automatically		3	0.6667	1.0000	0	0	mixed
+58	logical replication for only some tables		18	0.2778	0.5556	0	0	mixed
+59	rank full text search results by relevance		4	0.7500	0.7500	0	0	mixed
+60	sort spilling to temp files on disk		2	1.0000	1.0000	0	0	mixed

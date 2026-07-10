@@ -5,7 +5,7 @@ import java.util.Set;
 
 /**
  * Relevance judgments per query. {@code relevant} maps query_id to the set of
- * product_ids treated as relevant under the chosen binarization.
+ * chunk_ids treated as relevant under the chosen binarization.
  */
 public record Qrels(Map<Long, Set<Long>> relevant) {
     public Set<Long> relevantFor(long queryId) {

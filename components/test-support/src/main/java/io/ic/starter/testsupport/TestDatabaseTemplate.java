@@ -10,6 +10,6 @@ public class TestDatabaseTemplate extends DatabaseTemplate {
     }
 
     public void clear() {
-        execute("truncate products");
+        execute("truncate chunks");
     }
 }

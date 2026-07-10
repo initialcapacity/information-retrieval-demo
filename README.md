@@ -1,14 +1,16 @@
 # Information Retrieval Demo
 
-A Java search demo comparing BM25 (lexical), dense embeddings (semantic), and their RRF hybrid over the [WANDS](https://github.com/wayfair/WANDS) product catalogue. Built for the DubJUG talk.
+A Java search demo comparing BM25 (lexical), dense embeddings (semantic), and their RRF hybrid over the PostgreSQL 18 manual: the retrieval component of a docs assistant, searching the documentation of the very database that serves it. Built for the DubJUG talk.
 
 Stack: Java 26, Javalin, Postgres 18 with `pg_search` (BM25) and `pgvector` (dense), all in one database via the `paradedb/paradedb:pg18` image. Retrieval config: k=10, RRF k=60, `hnsw.ef_search=400`.
+
+Corpus: 1,779 section-level chunks parsed from the official `postgresql-18.1-docs.tar.gz` (PostgreSQL License), committed at `data/pgdocs/chunks.tsv`. Relevance labels are LLM judgments (UMBRELA-style, graded 0-3 and binarized) over pooled BM25 + dense candidates for 56 hand-written developer queries; `Exact` means grade >= 2 (answers the query), `Partial` means grade 1 (related).
 
 ## Prerequisites
 
 - Docker (running)
 - JDK 26 (the Gradle wrapper is 9.5.1, which supports running on JDK 26)
-- `OPENAI_API_KEY` set in `.env` (used to backfill product embeddings and to embed ad-hoc queries; the core demo serves from a committed cache)
+- `OPENAI_API_KEY` set in `.env` (used to backfill chunk embeddings and to embed ad-hoc queries; the core demo serves from a committed cache)
 
 ## One-time setup
 
@@ -18,11 +20,11 @@ set -a && . ./.env && set +a                         # load DATABASE_URL + OPENA
 
 ./scripts/verify.sh                                  # create db, migrate, build + test (offline)
 
-./gradlew :applications:tools:ingestWands            # load ~43K WANDS products
-./gradlew :applications:tools:backfillEmbeddings     # embed products + build HNSW (~20 min, one OpenAI pass)
-./gradlew :applications:tools:cacheQueryEmbeddings   # cache the 116 fixture query vectors (offline search + eval)
-./gradlew :applications:tools:cacheHeroQueries       # cache out-of-band hero queries (e.g. bathroom vanity knobs)
+./gradlew :applications:tools:ingestDocs             # load the 1,779 doc chunks (seconds)
+./gradlew :applications:tools:backfillEmbeddings     # embed chunks + build HNSW (~2 min, one OpenAI pass)
 ```
+
+Fixture query embeddings ship committed (`fixture-query-embeddings.tsv` and `data/query-embeddings.tsv`), so search over fixture queries and the eval run offline. `cacheQueryEmbeddings` regenerates them if the fixture changes.
 
 ## Run
 
@@ -34,10 +36,10 @@ set -a && . ./.env && set +a                         # load DATABASE_URL + OPENA
 
 ## Demo script (~5 minutes)
 
-1. **The clash.** On the Search view, click the `bathroom vanity knobs` hero query. BM25 returns bathroom vanity *sets* (the furniture); dense recovers the actual knobs. Keyword search lands in the wrong category, semantics rescues it. (Out-of-band query, so it does one live embed. See the offline note below.)
-2. **Keyword wins.** Click `writing desk 48"`. BM25 nails the exact 48-inch desks; dense blurs across similar desks (all PARTIAL). Exact tokens and dimensions favour lexical.
-3. **Semantics wins.** Click `beds that have leds`. Dense returns on-topic beds (LEDs are a feature, not in the title); BM25 drifts to a mirror and a sconce.
-4. **The numbers.** Open the Eval view. The F-score climbs BM25 -> dense -> hybrid (Exact-only, k=10), and the per-bucket table shows each method winning its own turf: keyword -> BM25, semantic -> dense, mixed -> hybrid.
+1. **The clash.** On the Search view, click `my database keeps growing even though I delete rows`. BM25 wanders into PL/Perl and SSL configuration; dense lands on deleting data and vacuuming. No shared vocabulary, so keyword search has nothing to grip.
+2. **Semantics wins.** Click `find rows where the text is spelled slightly wrong`. Dense returns pg_trgm and fuzzystrmatch (every row relevant); BM25 offers materialized views and CREATE USER.
+3. **Keyword wins.** Click `wal_level logical`. BM25 nails the logical-replication configuration sections; dense returns nothing relevant in the top 10. Exact config tokens favour lexical.
+4. **The numbers.** Open the Eval view. The F-score climbs BM25 (0.349) -> dense (0.366) -> hybrid (0.403) at Exact-only, k=10, and the per-bucket table shows keyword -> BM25 and semantic -> dense, with the hybrid winning overall.
 
 ## Regenerate the eval snapshot
 
@@ -47,4 +49,8 @@ set -a && . ./.env && set +a                         # load DATABASE_URL + OPENA
 
 ## Offline note
 
-With both cache steps run, the entire demo is network-independent. The in-band hero queries (`beds that have leds`, `writing desk 48"`) come from the fixture cache; the out-of-band `bathroom vanity knobs` comes from the hero-query cache. Any *other* ad-hoc query typed live will still do a live OpenAI embed and needs `OPENAI_API_KEY`. To add more offline hero queries, append to `HERO_QUERIES` in `CacheHeroQueriesMain` and re-run `:applications:tools:cacheHeroQueries`.
+All three hero queries are fixture queries, so they serve from the committed embedding cache: the scripted demo is network-independent. Any *other* ad-hoc query typed live does a live OpenAI embed and needs `OPENAI_API_KEY` (without it, the UI degrades to a BM25-only column with a warning).
+
+## Corpus regeneration
+
+`data/pgdocs/chunks.tsv` was produced from the official docs tarball by the chunker in `scripts/chunk_docs.py` (one chunk per page, split at h2/h3 past ~900 words, release notes excluded). Re-running it against a newer docs release changes chunk ids, which invalidates the committed qrels; re-label before swapping corpora.

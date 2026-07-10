@@ -11,7 +11,7 @@
         </p>
 
         <form class="search-form" action="/" method="get">
-            <input type="search" name="q" placeholder="Search the catalogue..." value="${view.query()}" autofocus>
+            <input type="search" name="q" placeholder="Search the PostgreSQL manual..." value="${view.query()}" autofocus>
             <button type="submit" class="accent">Search</button>
         </form>
         <div class="hero-links">

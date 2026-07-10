@@ -3,7 +3,7 @@ package io.ic.starter.eval;
 import java.util.List;
 
 /**
- * Produces a ranked list of product ids (best first) for a fixture query.
+ * Produces a ranked list of chunk ids (best first) for a fixture query.
  */
 @FunctionalInterface
 public interface RankingFunction {

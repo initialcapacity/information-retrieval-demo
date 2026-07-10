@@ -13,7 +13,7 @@ import java.util.Set;
 
 /**
  * Loads relevance judgments from the WANDS label.csv (tab-separated:
- * id, query_id, product_id, label). Binarizes graded labels: by default
+ * id, query_id, chunk_id, label). Binarizes graded labels: by default
  * Exact + Partial count as relevant; strict mode counts Exact only.
  */
 public class QrelsLoader {
@@ -45,8 +45,8 @@ public class QrelsLoader {
                         ? (label.equals("Exact") || label.equals("Partial"))
                         : label.equals("Exact");
                 if (isRelevant) {
-                    long productId = Long.parseLong(f[2].trim());
-                    relevant.computeIfAbsent(queryId, _ -> new HashSet<>()).add(productId);
+                    long chunkId = Long.parseLong(f[2].trim());
+                    relevant.computeIfAbsent(queryId, _ -> new HashSet<>()).add(chunkId);
                 }
             }
             return new Qrels(relevant);

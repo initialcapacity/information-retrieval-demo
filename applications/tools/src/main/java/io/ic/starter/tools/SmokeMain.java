@@ -1,6 +1,6 @@
 package io.ic.starter.tools;
 
-import io.ic.starter.catalog.ProductsGateway;
+import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.databasesupport.DataSourceFactory;
 import io.ic.starter.search.Bm25Gateway;
 import io.ic.starter.search.EmbeddingGateway;
@@ -18,9 +18,9 @@ import java.util.List;
  */
 public class SmokeMain {
     private static final String[] HERO_QUERIES = {
-            "bathroom vanity knobs",
-            "beds that have leds",
-            "writing desk 48\""
+            "my database keeps growing even though I delete rows",
+            "find rows where the text is spelled slightly wrong",
+            "wal_level logical"
     };
 
     public static void main(String[] args) {
@@ -30,7 +30,7 @@ public class SmokeMain {
         DataSource dataSource = DataSourceFactory.create(databaseUrl, 10, "set hnsw.ef_search = 400");
         var bm25Gateway = new Bm25Gateway(dataSource);
         var embeddingGateway = new EmbeddingGateway(dataSource);
-        var productsGateway = new ProductsGateway(dataSource);
+        var chunksGateway = new ChunksGateway(dataSource);
         var client = (apiKey == null || apiKey.isBlank()) ? null : new OpenAiEmbeddingClient(apiKey);
 
         for (String query : HERO_QUERIES) {
@@ -39,28 +39,28 @@ public class SmokeMain {
             System.out.println("=".repeat(70));
 
             System.out.println("\n-- BM25 (lexical) top 5 --");
-            printResults(bm25Gateway.search(query, 5), productsGateway);
+            printResults(bm25Gateway.search(query, 5), chunksGateway);
 
             if (client != null) {
                 float[] vector = client.embed(query);
                 System.out.println("\n-- Dense (semantic) top 5 --");
-                printResults(embeddingGateway.search(vector, 5), productsGateway);
+                printResults(embeddingGateway.search(vector, 5), chunksGateway);
             } else {
                 System.out.println("\n-- Dense skipped (no OPENAI_API_KEY) --");
             }
         }
     }
 
-    private static void printResults(List<SearchResult> results, ProductsGateway productsGateway) {
+    private static void printResults(List<SearchResult> results, ChunksGateway chunksGateway) {
         if (results.isEmpty()) {
             System.out.println("   (no results)");
             return;
         }
         for (SearchResult result : results) {
-            var product = productsGateway.find(result.productId());
-            String name = product.map(p -> p.productName()).orElse("?");
-            String klass = product.map(p -> p.productClass()).orElse("?");
-            System.out.printf("   [%.4f] %s  (%s)%n", result.score(), name, klass);
+            var chunk = chunksGateway.find(result.chunkId());
+            String title = chunk.map(c -> c.title()).orElse("?");
+            String page = chunk.map(c -> c.page()).orElse("?");
+            System.out.printf("   [%.4f] %s  (%s)%n", result.score(), title, page);
         }
     }
 }

@@ -1,7 +1,7 @@
 package io.ic.starter.tools;
 
-import io.ic.starter.catalog.ProductEmbeddingInput;
-import io.ic.starter.catalog.ProductsGateway;
+import io.ic.starter.catalog.ChunkEmbeddingInput;
+import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.databasesupport.DataSourceFactory;
 import io.ic.starter.search.OpenAiEmbeddingClient;
 import io.ic.starter.search.VectorLiterals;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * One-shot backfill: embeds every product's search_text with OpenAI
+ * One-shot backfill: embeds every chunk's search_text with OpenAI
  * text-embedding-3-small and writes the vectors into the embedding column.
  * Resumable: only rows with a null embedding are processed. Builds the HNSW
  * index once the column is fully populated.
@@ -26,7 +26,7 @@ public class BackfillMain {
         }
 
         var dataSource = DataSourceFactory.create(databaseUrl);
-        var gateway = new ProductsGateway(dataSource);
+        var gateway = new ChunksGateway(dataSource);
         var client = new OpenAiEmbeddingClient(apiKey);
 
         long total = gateway.count();
@@ -36,17 +36,17 @@ public class BackfillMain {
         long processed = 0;
         long startTime = System.currentTimeMillis();
         while (true) {
-            List<ProductEmbeddingInput> batch = gateway.productsMissingEmbeddings(BATCH_SIZE);
+            List<ChunkEmbeddingInput> batch = gateway.chunksMissingEmbeddings(BATCH_SIZE);
             if (batch.isEmpty()) {
                 break;
             }
-            List<String> texts = batch.stream().map(ProductEmbeddingInput::searchText).toList();
+            List<String> texts = batch.stream().map(ChunkEmbeddingInput::searchText).toList();
             List<float[]> vectors = client.embed(texts);
 
-            var updates = new ArrayList<ProductsGateway.EmbeddingUpdate>(batch.size());
+            var updates = new ArrayList<ChunksGateway.EmbeddingUpdate>(batch.size());
             for (int i = 0; i < batch.size(); i++) {
-                updates.add(new ProductsGateway.EmbeddingUpdate(
-                        batch.get(i).productId(),
+                updates.add(new ChunksGateway.EmbeddingUpdate(
+                        batch.get(i).chunkId(),
                         VectorLiterals.toLiteral(vectors.get(i))
                 ));
             }

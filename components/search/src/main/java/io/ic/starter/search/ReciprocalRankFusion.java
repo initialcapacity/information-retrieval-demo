@@ -23,7 +23,7 @@ public class ReciprocalRankFusion {
     }
 
     /**
-     * Fuses ranked lists of product ids (best first) into a single ranked list.
+     * Fuses ranked lists of chunk ids (best first) into a single ranked list.
      */
     public List<SearchResult> fuse(List<List<Long>> rankedLists) {
         Map<Long, Double> scores = new HashMap<>();
@@ -36,11 +36,11 @@ public class ReciprocalRankFusion {
         return scores.entrySet().stream()
                 .map(entry -> new SearchResult(entry.getKey(), entry.getValue()))
                 .sorted(Comparator.comparingDouble(SearchResult::score).reversed()
-                        .thenComparingLong(SearchResult::productId))
+                        .thenComparingLong(SearchResult::chunkId))
                 .toList();
     }
 
     public static List<Long> toIds(List<SearchResult> results) {
-        return results.stream().map(SearchResult::productId).toList();
+        return results.stream().map(SearchResult::chunkId).toList();
     }
 }

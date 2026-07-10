@@ -19,7 +19,7 @@ public class ReciprocalRankFusionTest {
                 List.of(1L, 2L, 3L),
                 List.of(2L, 4L, 1L)
         ));
-        assertEquals(2L, fused.getFirst().productId());
+        assertEquals(2L, fused.getFirst().chunkId());
     }
 
     @Test
@@ -30,7 +30,7 @@ public class ReciprocalRankFusionTest {
                 List.of(5L, 1L),
                 List.of(9L, 1L)
         ));
-        assertEquals(1L, fused.getFirst().productId());
+        assertEquals(1L, fused.getFirst().chunkId());
     }
 
     @Test

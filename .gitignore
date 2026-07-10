@@ -2,6 +2,4 @@
 build
 .gradle
 .env
-# Raw WANDS dumps and derived caches are reproducible; do not commit them.
-/data/wands/
-/data/query-embeddings.tsv
+# Raw corpus downloads are reproducible; the chunked corpus and query embeddings are committed for determinism.

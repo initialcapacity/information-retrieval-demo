@@ -18,8 +18,8 @@ public class EmbeddingGateway {
     public List<SearchResult> search(float[] queryEmbedding, int limit) {
         String literal = VectorLiterals.toLiteral(queryEmbedding);
         return databaseTemplate.queryList(
-                "select product_id, 1 - (embedding <=> ?::vector) as similarity " +
-                        "from products " +
+                "select chunk_id, 1 - (embedding <=> ?::vector) as similarity " +
+                        "from chunks " +
                         "where embedding is not null " +
                         "order by embedding <=> ?::vector " +
                         "limit ?",
@@ -28,7 +28,7 @@ public class EmbeddingGateway {
                     statement.setString(2, literal);
                     statement.setInt(3, limit);
                 },
-                rs -> new SearchResult(rs.getLong("product_id"), rs.getDouble("similarity"))
+                rs -> new SearchResult(rs.getLong("chunk_id"), rs.getDouble("similarity"))
         );
     }
 }

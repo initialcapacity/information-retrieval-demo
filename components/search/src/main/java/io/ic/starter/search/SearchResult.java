@@ -1,4 +1,4 @@
 package io.ic.starter.search;
 
-public record SearchResult(long productId, double score) {
+public record SearchResult(long chunkId, double score) {
 }

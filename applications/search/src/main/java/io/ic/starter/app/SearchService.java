@@ -1,7 +1,7 @@
 package io.ic.starter.app;
 
-import io.ic.starter.catalog.ProductRecord;
-import io.ic.starter.catalog.ProductsGateway;
+import io.ic.starter.catalog.ChunkRecord;
+import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.eval.FixtureLoader;
 import io.ic.starter.eval.FixtureQuery;
 import io.ic.starter.search.Bm25Gateway;
@@ -25,24 +25,26 @@ public class SearchService {
     private static final int CANDIDATE_DEPTH = 100;
 
     private static final List<String> HERO_QUERIES = List.of(
-            "bathroom vanity knobs", "beds that have leds", "writing desk 48\"");
+            "my database keeps growing even though I delete rows",
+            "find rows where the text is spelled slightly wrong",
+            "wal_level logical");
 
     private final Bm25Gateway bm25Gateway;
     private final EmbeddingGateway embeddingGateway;
     private final HybridSearchService hybridService;
-    private final ProductsGateway productsGateway;
+    private final ChunksGateway chunksGateway;
     private final QueryEmbeddingResolver embeddingResolver;
     private final FixtureIndex fixtureIndex;
     private final List<SearchView.LeanGroup> pickerGroups;
     private final int pickerTotal;
 
     public SearchService(Bm25Gateway bm25Gateway, EmbeddingGateway embeddingGateway,
-                         HybridSearchService hybridService, ProductsGateway productsGateway,
+                         HybridSearchService hybridService, ChunksGateway chunksGateway,
                          QueryEmbeddingResolver embeddingResolver, FixtureIndex fixtureIndex) {
         this.bm25Gateway = bm25Gateway;
         this.embeddingGateway = embeddingGateway;
         this.hybridService = hybridService;
-        this.productsGateway = productsGateway;
+        this.chunksGateway = chunksGateway;
         this.embeddingResolver = embeddingResolver;
         this.fixtureIndex = fixtureIndex;
         this.pickerGroups = buildPickerGroups();
@@ -119,25 +121,18 @@ public class SearchService {
     }
 
     private SearchView.Column column(String method, String subtitle, List<SearchResult> results, Long queryId) {
-        Set<Long> ids = new LinkedHashSet<>(results.stream().map(SearchResult::productId).toList());
-        Map<Long, ProductRecord> products = productsGateway.findSummaries(ids);
+        Set<Long> ids = new LinkedHashSet<>(results.stream().map(SearchResult::chunkId).toList());
+        Map<Long, ChunkRecord> chunks = chunksGateway.findSummaries(ids);
 
         var views = new java.util.ArrayList<SearchView.Result>();
         int rank = 1;
         for (SearchResult result : results) {
-            ProductRecord product = products.get(result.productId());
-            String name = product != null ? product.productName() : "product " + result.productId();
-            String category = product != null ? categoryOf(product) : "";
-            String relevance = queryId != null ? fixtureIndex.relevance(queryId, result.productId()) : null;
-            views.add(new SearchView.Result(rank++, result.productId(), name, category, relevance));
+            ChunkRecord chunk = chunks.get(result.chunkId());
+            String name = chunk != null ? chunk.title() : "chunk " + result.chunkId();
+            String category = chunk != null ? chunk.page() : "";
+            String relevance = queryId != null ? fixtureIndex.relevance(queryId, result.chunkId()) : null;
+            views.add(new SearchView.Result(rank++, result.chunkId(), name, category, relevance));
         }
         return new SearchView.Column(method, subtitle, views);
-    }
-
-    private static String categoryOf(ProductRecord product) {
-        if (product.productClass() != null && !product.productClass().isBlank()) {
-            return product.productClass();
-        }
-        return product.categoryHierarchy() == null ? "" : product.categoryHierarchy();
     }
 }
