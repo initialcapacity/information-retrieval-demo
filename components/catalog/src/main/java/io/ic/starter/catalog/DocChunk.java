@@ -2,8 +2,8 @@ package io.ic.starter.catalog;
 
 /**
  * One section-level chunk of the PostgreSQL documentation, as parsed from the
- * corpus TSV. searchText derives as "title. text" so BM25 and embeddings index
- * the same string (and so ingest matches the corpus generator exactly).
+ * chunks TSV. searchText derives as "title. text" so BM25 and embeddings index
+ * the same string (and so ingest matches the chunk generator exactly).
  */
 public record DocChunk(
         long chunkId,

@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Loads the PostgreSQL docs corpus into Postgres, deriving search_text at
+ * Loads the chunked PostgreSQL docs into Postgres, deriving search_text at
  * insert time (title + text).
  */
 public class IngestMain {

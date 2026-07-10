@@ -4,7 +4,7 @@ A Java search demo comparing BM25 (lexical), dense embeddings (semantic), and th
 
 Stack: Java 26, Javalin, Postgres 18 with `pg_search` (BM25) and `pgvector` (dense), all in one database via the `paradedb/paradedb:pg18` image. Retrieval config: k=10, RRF k=60, `hnsw.ef_search=400`.
 
-Corpus: 1,779 section-level chunks parsed from the official `postgresql-18.1-docs.tar.gz` (PostgreSQL License), committed at `data/pgdocs/chunks.tsv`. Relevance labels are LLM judgments (UMBRELA-style, graded 0-3 and binarized) over pooled BM25 + dense candidates for 56 hand-written developer queries; `Exact` means grade >= 2 (answers the query), `Partial` means grade 1 (related).
+The documents: 1,779 section-level chunks parsed from the official `postgresql-18.1-docs.tar.gz` (PostgreSQL License), committed at `data/pgdocs/chunks.tsv`. Relevance labels are LLM judgments (UMBRELA-style, graded 0-3 and binarized) over pooled BM25 + dense candidates for 56 hand-written developer queries; `Exact` means grade >= 2 (answers the query), `Partial` means grade 1 (related).
 
 ## Prerequisites
 
@@ -51,6 +51,6 @@ Fixture query embeddings ship committed (`fixture-query-embeddings.tsv` and `dat
 
 All three hero queries are fixture queries, so they serve from the committed embedding cache: the scripted demo is network-independent. Any *other* ad-hoc query typed live does a live OpenAI embed and needs `OPENAI_API_KEY` (without it, the UI degrades to a BM25-only column with a warning).
 
-## Corpus regeneration
+## Regenerating the chunks
 
 `data/pgdocs/chunks.tsv` was produced from the official docs tarball by the chunker in `scripts/chunk_docs.py` (one chunk per page, split at h2/h3 past ~900 words, release notes excluded). Re-running it against a newer docs release changes chunk ids, which invalidates the committed qrels; re-label before swapping corpora.

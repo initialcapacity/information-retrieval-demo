@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parses the tab-separated docs corpus (data/pgdocs/chunks.tsv). Columns
+ * Parses the tab-separated docs chunks (data/pgdocs/chunks.tsv). Columns
  * (with header): chunk_id, title, page, text.
  */
 public class DocsLoader {
