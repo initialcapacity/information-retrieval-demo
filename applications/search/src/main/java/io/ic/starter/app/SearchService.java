@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * method live against Postgres and annotates results with fixture relevance.
  */
 public class SearchService {
-    private static final int DISPLAY_K = 5;      // results shown per column on stage; the eval k is separate
+    private static final int DISPLAY_K = 10;     // results shown per column on stage, aligned with the eval k
     private static final int CANDIDATE_DEPTH = 100;
 
     private static final List<String> HERO_QUERIES = List.of(
