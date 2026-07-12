@@ -4,7 +4,7 @@
 <section>
     <header>
         <p class="eyebrow"><span class="eyebrow-inner">precision / recall / f-score</span></p>
-        <h2>The F-score <em>climbs</em>: BM25 &rarr; dense &rarr; hybrid</h2>
+        <h2>The F-score <em>climbs</em>: BM25 &rarr; embeddings &rarr; hybrid</h2>
         <p class="lede">
             Macro-averaged over 56 fixture queries against the PostgreSQL manual at k=${report.k()},
             RRF k=${report.rrfK()}, hnsw.ef_search=${report.efSearch()}.
@@ -46,8 +46,8 @@
                     <thead>
                         <tr>
                             <th>lean bucket</th><th class="num">n</th>
-                            <th class="num">bm25 f1</th><th class="num">dense f1</th><th class="num">hybrid f1</th>
-                            <th class="num">bm25 recall</th><th class="num">dense recall</th><th class="num">hybrid recall</th>
+                            <th class="num">bm25 f1</th><th class="num">embeddings f1</th><th class="num">hybrid f1</th>
+                            <th class="num">bm25 recall</th><th class="num">embeddings recall</th><th class="num">hybrid recall</th>
                         </tr>
                     </thead>
                     <tbody>

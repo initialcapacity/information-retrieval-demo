@@ -79,7 +79,7 @@ public class SearchService {
 
         var columns = List.of(
                 column("BM25", "lexical", bm25, queryId),
-                column("Dense", "semantic", dense, queryId),
+                column("Embeddings", "semantic", dense, queryId),
                 column("Hybrid", "RRF k=60", hybrid, queryId)
         );
         return new SearchView(query, true, queryId != null, resolved.source(), null, columns, HERO_QUERIES,
@@ -95,9 +95,9 @@ public class SearchService {
         record Meta(String label, String desc) {
         }
         var meta = Map.of(
-                "keyword", new Meta("Keyword", "lexical wins"),
-                "semantic", new Meta("Semantic", "dense wins"),
-                "mixed", new Meta("Mixed", "hybrid wins")
+                "keyword", new Meta("Keyword", "BM25 scores best"),
+                "semantic", new Meta("Semantic", "embeddings score best"),
+                "mixed", new Meta("Mixed", "hybrid scores best")
         );
         Map<String, List<FixtureQuery>> byLean = new FixtureLoader().load().stream()
                 .collect(Collectors.groupingBy(FixtureQuery::lean));

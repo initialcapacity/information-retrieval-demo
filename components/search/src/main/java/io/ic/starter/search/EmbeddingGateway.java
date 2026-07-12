@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 import java.util.List;
 
 /**
- * Dense retrieval via pgvector cosine distance over the embedding column.
+ * Embedding search via pgvector cosine distance over the embedding column.
  */
 public class EmbeddingGateway {
     private final DatabaseTemplate databaseTemplate;

@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Runs the full eval: BM25, dense, and hybrid over the fixture, macro-averaged
+ * Runs the full eval: BM25, embeddings, and hybrid over the fixture, macro-averaged
  * P/R/F1 at k, with per-lean breakdowns and a validation gate.
  */
 public class EvalMain {
@@ -67,7 +67,7 @@ public class EvalMain {
         // Headline / gate config: Exact-only, k=10 (the agreed demo binarization).
         List<MethodMetrics> overall = List.of(
                 runner.evaluate("bm25", queries, qrelsExact, bm25, K),
-                runner.evaluate("dense", queries, qrelsExact, dense, K),
+                runner.evaluate("embeddings", queries, qrelsExact, dense, K),
                 runner.evaluate("hybrid", queries, qrelsExact, hybridRank, K)
         );
         System.out.println(ResultsTable.format("OVERALL (Exact only) [headline config]", K, overall));
@@ -75,7 +75,7 @@ public class EvalMain {
         // Default Exact+Partial mode (shown for completeness; hybrid ~ dense here at k=10).
         System.out.println(ResultsTable.format("OVERALL (Exact+Partial)", K, List.of(
                 runner.evaluate("bm25", queries, qrels, bm25, K),
-                runner.evaluate("dense", queries, qrels, dense, K),
+                runner.evaluate("embeddings", queries, qrels, dense, K),
                 runner.evaluate("hybrid", queries, qrels, hybridRank, K)
         )));
 
@@ -86,7 +86,7 @@ public class EvalMain {
             List<FixtureQuery> bucket = byLean.getOrDefault(lean, List.of());
             System.out.println(ResultsTable.format("LEAN=" + lean, K, List.of(
                     runner.evaluate("bm25", bucket, qrels, bm25, K),
-                    runner.evaluate("dense", bucket, qrels, dense, K),
+                    runner.evaluate("embeddings", bucket, qrels, dense, K),
                     runner.evaluate("hybrid", bucket, qrels, hybridRank, K)
             )));
         }
@@ -97,7 +97,7 @@ public class EvalMain {
         double hybridF1 = overall.get(2).f1();
         System.out.println("-".repeat(60));
         boolean climbs = hybridF1 > bm25F1 && hybridF1 > denseF1;
-        System.out.printf("VALIDATION GATE: hybrid F1=%.4f  bm25 F1=%.4f  dense F1=%.4f%n", hybridF1, bm25F1, denseF1);
+        System.out.printf("VALIDATION GATE: hybrid F1=%.4f  bm25 F1=%.4f  embeddings F1=%.4f%n", hybridF1, bm25F1, denseF1);
         System.out.println(climbs
                 ? "PASS: hybrid F1 exceeds both single-method baselines."
                 : "FAIL: hybrid does not beat both baselines (see diagnosis above).");
@@ -124,7 +124,7 @@ public class EvalMain {
                 hardQueries.add(q.queryId() + " \"" + q.query() + "\"");
             }
         }
-        System.out.printf("semantic queries: %d | dense recall > bm25 recall on %d | hard for both (recall 0): %d%n",
+        System.out.printf("semantic queries: %d | embeddings recall > bm25 recall on %d | hard for both (recall 0): %d%n",
                 semantic.size(), denseWins, hardForBoth);
         if (!hardQueries.isEmpty()) {
             System.out.println("  hard-for-both queries:");
@@ -151,7 +151,7 @@ public class EvalMain {
             Qrels qrels, RankingFunction bm25, RankingFunction dense, RankingFunction hybrid, EvalRunner runner) {
         List<MethodMetrics> overall = List.of(
                 runner.evaluate("bm25", queries, qrels, bm25, K),
-                runner.evaluate("dense", queries, qrels, dense, K),
+                runner.evaluate("embeddings", queries, qrels, dense, K),
                 runner.evaluate("hybrid", queries, qrels, hybrid, K)
         );
         var buckets = new ArrayList<EvalReport.BucketReport>();
@@ -159,7 +159,7 @@ public class EvalMain {
             List<FixtureQuery> bucket = byLean.getOrDefault(lean, List.of());
             buckets.add(new EvalReport.BucketReport(lean, bucket.size(), List.of(
                     runner.evaluate("bm25", bucket, qrels, bm25, K),
-                    runner.evaluate("dense", bucket, qrels, dense, K),
+                    runner.evaluate("embeddings", bucket, qrels, dense, K),
                     runner.evaluate("hybrid", bucket, qrels, hybrid, K)
             )));
         }

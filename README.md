@@ -1,10 +1,10 @@
 # Information Retrieval Demo
 
-A Java search demo comparing BM25 (lexical), dense embeddings (semantic), and their RRF hybrid over the PostgreSQL 18 manual: the retrieval component of a docs assistant, searching the documentation of the very database that serves it. Built for the DubJUG talk.
+A Java search demo comparing BM25 (keyword), embeddings (semantic), and their RRF hybrid over the PostgreSQL 18 manual: the retrieval component of a docs assistant, searching the documentation of the very database that serves it. Built for the DubJUG talk.
 
-Stack: Java 26, Javalin, Postgres 18 with `pg_search` (BM25) and `pgvector` (dense), all in one database via the `paradedb/paradedb:pg18` image. Retrieval config: k=10, RRF k=60, `hnsw.ef_search=400`.
+Stack: Java 26, Javalin, Postgres 18 with `pg_search` (BM25) and `pgvector` (embeddings), all in one database via the `paradedb/paradedb:pg18` image. Retrieval config: k=10, RRF k=60, `hnsw.ef_search=400`.
 
-The documents: 1,779 section-level chunks parsed from the official `postgresql-18.1-docs.tar.gz` (PostgreSQL License), committed at `data/pgdocs/chunks.tsv`. Relevance labels are LLM judgments (UMBRELA-style, graded 0-3 and binarized) over pooled BM25 + dense candidates for 56 hand-written developer queries; `Exact` means grade >= 2 (answers the query), `Partial` means grade 1 (related).
+The documents: 1,779 section-level chunks parsed from the official `postgresql-18.1-docs.tar.gz` (PostgreSQL License), committed at `data/pgdocs/chunks.tsv`. Relevance labels are LLM judgments (UMBRELA-style, graded 0-3 and binarized) over pooled BM25 + embedding candidates for 56 hand-written developer queries; `Exact` means grade >= 2 (answers the query), `Partial` means grade 1 (related).
 
 ## Prerequisites
 
@@ -36,10 +36,10 @@ Fixture query embeddings ship committed (`fixture-query-embeddings.tsv` and `dat
 
 ## Demo script (~5 minutes)
 
-1. **The clash.** On the Search view, click `my database keeps growing even though I delete rows`. BM25 wanders into PL/Perl and SSL configuration; dense lands on deleting data and vacuuming. No shared vocabulary, so keyword search has nothing to grip.
-2. **Semantics wins.** Click `find rows where the text is spelled slightly wrong`. Dense returns pg_trgm and fuzzystrmatch (every row relevant); BM25 offers materialized views and CREATE USER.
-3. **Keyword wins.** Click `wal_level logical`. BM25 nails the logical-replication configuration sections; dense returns nothing relevant in the top 10. Exact config tokens favour lexical.
-4. **The numbers.** Open the Eval view. The F-score climbs BM25 (0.349) -> dense (0.366) -> hybrid (0.403) at Exact-only, k=10, and the per-bucket table shows keyword -> BM25 and semantic -> dense, with the hybrid winning overall.
+1. **The clash.** On the Search view, click `my database keeps growing even though I delete rows`. BM25 returns PL/Perl and SSL configuration sections; embeddings return deleting-data and vacuuming sections. The query shares no vocabulary with the answer, so keyword search has nothing to match.
+2. **The semantic query.** Click `find rows where the text is spelled slightly wrong`. Embeddings return pg_trgm and fuzzystrmatch (every row relevant); BM25 returns materialized views and CREATE USER.
+3. **The keyword query.** Click `wal_level logical`. BM25 ranks the logical-replication configuration sections first; embeddings return nothing relevant in the top 10. Exact config tokens need exact matching.
+4. **The numbers.** Open the Eval view. The F-score climbs BM25 (0.349) -> embeddings (0.366) -> hybrid (0.403) at Exact-only, k=10, and the per-bucket table shows keyword queries scoring best with BM25 and semantic queries with embeddings, with the hybrid highest overall.
 
 ## Regenerate the eval snapshot
 

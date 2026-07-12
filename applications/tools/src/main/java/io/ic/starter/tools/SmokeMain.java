@@ -11,10 +11,10 @@ import javax.sql.DataSource;
 import java.util.List;
 
 /**
- * Hero-query smoke test: prints BM25 vs dense top results side by side so the
+ * Hero-query smoke test: prints BM25 vs embedding top results side by side so the
  * opposite failure modes are visible without the metrics. Always embeds each
  * query live via OpenAI (requires OPENAI_API_KEY); it does not read the
- * query-embedding cache. Without a key, the dense column is skipped.
+ * query-embedding cache. Without a key, the embeddings column is skipped.
  */
 public class SmokeMain {
     private static final String[] HERO_QUERIES = {
@@ -43,10 +43,10 @@ public class SmokeMain {
 
             if (client != null) {
                 float[] vector = client.embed(query);
-                System.out.println("\n-- Dense (semantic) top 5 --");
+                System.out.println("\n-- Embeddings (semantic) top 5 --");
                 printResults(embeddingGateway.search(vector, 5), chunksGateway);
             } else {
-                System.out.println("\n-- Dense skipped (no OPENAI_API_KEY) --");
+                System.out.println("\n-- Embeddings skipped (no OPENAI_API_KEY) --");
             }
         }
     }

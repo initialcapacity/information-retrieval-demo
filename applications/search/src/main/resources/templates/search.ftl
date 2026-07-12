@@ -6,8 +6,8 @@
         <p class="eyebrow"><span class="eyebrow-inner">live retrieval</span></p>
         <h2>Three ways to <em>search</em>, side by side</h2>
         <p class="lede">
-            One query, three rankings: lexical BM25, dense embeddings, and their RRF hybrid.
-            Fixture queries mark Exact and Partial hits so you can see where each method wins and misses.
+            One query, three rankings: BM25, embeddings, and their RRF hybrid.
+            Fixture queries mark Exact and Partial hits so you can see where each method succeeds and fails.
         </p>
 
         <form class="search-form" action="/" method="get">
@@ -85,7 +85,7 @@
 
         <#if view.error()??>
             <div class="card" style="border-left: 3px solid var(--warning);">
-                <strong>Dense &amp; hybrid unavailable.</strong>
+                <strong>Embeddings &amp; hybrid unavailable.</strong>
                 <p style="color: var(--text-muted); margin-top: var(--space-2);">${view.error()}</p>
             </div>
         </#if>
