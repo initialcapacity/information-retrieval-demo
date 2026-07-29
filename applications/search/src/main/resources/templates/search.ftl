@@ -7,7 +7,7 @@
         <h2>Three ways to <em>search</em>, side by side</h2>
         <p class="lede">
             One query, three rankings: BM25, embeddings, and their RRF hybrid.
-            Fixture queries mark Exact and Partial hits so you can see where each method succeeds and fails.
+            Exact and Partial badges on fixture queries show where each method succeeds and fails.
         </p>
 
         <form class="search-form" action="/" method="get">
@@ -25,15 +25,15 @@
             <div class="qpicker" id="qpicker">
                 <button type="button" class="button qpicker-trigger" id="qpicker-trigger"
                         aria-haspopup="listbox" aria-expanded="false" aria-controls="qpicker-panel">
-                    Pick a labelled query <span class="n">(${view.pickerTotal()})</span>
+                    Pick a labeled query <span class="n">(${view.pickerTotal()})</span>
                     <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
 
-                <div class="qpanel" id="qpicker-panel" role="listbox" aria-label="Labelled queries by lean bucket">
+                <div class="qpanel" id="qpicker-panel" role="listbox" aria-label="Labeled queries by query type">
                     <div class="qpanel-head">
                         <div class="title">
-                            <span>Labelled queries</span>
-                            <span class="meta">${view.pickerTotal()} queries &middot; grouped by lean</span>
+                            <span>Labeled queries</span>
+                            <span class="meta">${view.pickerTotal()} queries &middot; grouped by query type</span>
                         </div>
                         <div class="qfilter">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -74,9 +74,9 @@
     <#if view.submitted()>
         <div class="row" style="margin-bottom: var(--space-5); gap: var(--space-3);">
             <#if view.fixtureQuery()>
-                <span class="badge signal dot">relevance labelled</span>
+                <span class="badge signal dot">relevance labeled</span>
             <#else>
-                <span class="badge">ad-hoc query - no relevance labels</span>
+                <span class="badge">ad-hoc query: no relevance labels</span>
             </#if>
             <#if view.embeddingSource()??>
                 <span class="badge">embedding: ${view.embeddingSource()}</span>
@@ -85,7 +85,7 @@
 
         <#if view.error()??>
             <div class="card" style="border-left: 3px solid var(--warning);">
-                <strong>Embeddings &amp; hybrid unavailable.</strong>
+                <strong>Embeddings and hybrid unavailable.</strong>
                 <p style="color: var(--text-muted); margin-top: var(--space-2);">${view.error()}</p>
             </div>
         </#if>

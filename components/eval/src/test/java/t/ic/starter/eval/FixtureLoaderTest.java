@@ -27,11 +27,11 @@ public class FixtureLoaderTest {
 
     @Test
     void parsesHeroQuery() {
-        FixtureQuery spelling = new FixtureLoader().load().stream()
-                .filter(q -> q.queryId() == 31)
+        FixtureQuery commits = new FixtureLoader().load().stream()
+                .filter(q -> q.queryId() == 39)
                 .findFirst()
                 .orElseThrow();
-        assertEquals("find rows where the text is spelled slightly wrong", spelling.query());
-        assertTrue(spelling.nExact() > 0);
+        assertEquals("writes are slow when many clients commit at once", commits.query());
+        assertTrue(commits.nExact() > 0);
     }
 }

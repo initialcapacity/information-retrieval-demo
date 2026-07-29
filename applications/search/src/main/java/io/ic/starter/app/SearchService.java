@@ -26,8 +26,8 @@ public class SearchService {
 
     private static final List<String> HERO_QUERIES = List.of(
             "my database keeps growing even though I delete rows",
-            "find rows where the text is spelled slightly wrong",
-            "wal_level logical");
+            "wal_level logical",
+            "writes are slow when many clients commit at once");
 
     private final Bm25Gateway bm25Gateway;
     private final EmbeddingGateway embeddingGateway;
@@ -95,9 +95,9 @@ public class SearchService {
         record Meta(String label, String desc) {
         }
         var meta = Map.of(
-                "keyword", new Meta("Keyword", "BM25 scores best"),
-                "semantic", new Meta("Semantic", "embeddings score best"),
-                "mixed", new Meta("Mixed", "hybrid scores best")
+                "keyword", new Meta("Keyword", "exact tokens: config names, error codes"),
+                "semantic", new Meta("Semantic", "paraphrased, no shared vocabulary"),
+                "mixed", new Meta("Mixed", "exact tokens and paraphrase together")
         );
         Map<String, List<FixtureQuery>> byLean = new FixtureLoader().load().stream()
                 .collect(Collectors.groupingBy(FixtureQuery::lean));

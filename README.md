@@ -36,10 +36,10 @@ Fixture query embeddings ship committed (`fixture-query-embeddings.tsv` and `dat
 
 ## Demo script (~5 minutes)
 
-1. **The clash.** On the Search view, click `my database keeps growing even though I delete rows`. BM25 returns PL/Perl and SSL configuration sections; embeddings return deleting-data and vacuuming sections. The query shares no vocabulary with the answer, so keyword search has nothing to match.
-2. **The semantic query.** Click `find rows where the text is spelled slightly wrong`. Embeddings return pg_trgm and fuzzystrmatch (every row relevant); BM25 returns materialized views and CREATE USER.
-3. **The keyword query.** Click `wal_level logical`. BM25 ranks the logical-replication configuration sections first; embeddings return nothing relevant in the top 10. Exact config tokens need exact matching.
-4. **The numbers.** Open the Eval view. The F-score climbs BM25 (0.349) -> embeddings (0.366) -> hybrid (0.403) at Exact-only, k=10, and the per-bucket table shows keyword queries scoring best with BM25 and semantic queries with embeddings, with the hybrid highest overall.
+1. **The embeddings query.** On the Search view, click `my database keeps growing even though I delete rows`. BM25 returns PL/Perl and SSL configuration sections; embeddings return deleting-data and vacuuming sections. The query shares no vocabulary with the answer (the manual says "dead tuples" and "reclaiming storage"), so keyword search has nothing to match.
+2. **The BM25 query.** Click `wal_level logical`. BM25 ranks all six relevant sections in its top 10; embeddings return nothing relevant. Exact config tokens need exact matching. The hybrid keeps the top result but only two of the six.
+3. **The hybrid query.** Click `writes are slow when many clients commit at once`. BM25 finds 4 of 9 relevant sections, embeddings find a different 4 (only 2 shared), and the hybrid column shows 7 of 9 with the top four rows all relevant, including sections neither method ranked in its top 10.
+4. **The numbers.** Open the Eval view. The eval scores all three methods with the same measure: BM25 0.349, embeddings 0.366, hybrid 0.403 F1 (Exact-only, k=10). The per-bucket table shows keyword queries scoring best with BM25 and semantic queries with embeddings, with the hybrid highest overall.
 
 ## Regenerate the eval snapshot
 
