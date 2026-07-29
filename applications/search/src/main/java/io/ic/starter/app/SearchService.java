@@ -8,6 +8,7 @@ import io.ic.starter.search.Bm25Gateway;
 import io.ic.starter.search.EmbeddingGateway;
 import io.ic.starter.search.HybridSearchService;
 import io.ic.starter.search.SearchResult;
+import io.ic.starter.search.Timed;
 
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -18,7 +19,8 @@ import java.util.stream.Collectors;
 
 /**
  * Builds the three-column comparison for a query: BM25, dense, hybrid. Runs each
- * method live against Postgres and annotates results with fixture relevance.
+ * method live against Postgres, times each one, and annotates results with fixture
+ * relevance.
  */
 public class SearchService {
     private static final int DISPLAY_K = 10;     // results shown per column on stage, aligned with the eval k
@@ -52,38 +54,50 @@ public class SearchService {
     }
 
     public SearchView blank() {
-        return new SearchView("", false, false, null, null, List.of(), HERO_QUERIES, pickerTotal, pickerGroups);
+        return new SearchView("", false, false, null, null, List.of(), null, HERO_QUERIES, pickerTotal, pickerGroups);
     }
 
     public SearchView search(String query) {
         if (query == null || query.isBlank()) {
             return blank();
         }
+        long start = System.nanoTime();
         Long queryId = fixtureIndex.queryId(query).orElse(null);
 
-        List<SearchResult> bm25 = bm25Gateway.search(query, DISPLAY_K);
+        Timed<List<SearchResult>> bm25 = Timed.of(() -> bm25Gateway.search(query, DISPLAY_K));
 
-        QueryEmbeddingResolver.Resolved resolved;
+        Timed<QueryEmbeddingResolver.Resolved> resolved;
         try {
-            resolved = embeddingResolver.resolve(query);
+            resolved = Timed.of(() -> embeddingResolver.resolve(query));
         } catch (RuntimeException e) {
             // BM25 still renders; dense/hybrid need an embedding.
             var columns = List.of(column("BM25", "lexical", bm25, queryId));
-            return new SearchView(query, true, queryId != null, null, e.getMessage(), columns, HERO_QUERIES,
-                    pickerTotal, pickerGroups);
+            return new SearchView(query, true, queryId != null, null, e.getMessage(), columns,
+                    timing(null, start), HERO_QUERIES, pickerTotal, pickerGroups);
         }
 
-        List<SearchResult> dense = embeddingGateway.search(resolved.vector(), DISPLAY_K);
-        List<SearchResult> hybrid = hybridService
-                .hybrid(query, resolved.vector(), CANDIDATE_DEPTH).stream().limit(DISPLAY_K).toList();
+        float[] vector = resolved.value().vector();
+        Timed<List<SearchResult>> dense = Timed.of(() -> embeddingGateway.search(vector, DISPLAY_K));
+        Timed<List<SearchResult>> hybrid = Timed.of(() -> hybridService
+                .hybrid(query, vector, CANDIDATE_DEPTH).stream().limit(DISPLAY_K).toList());
 
         var columns = List.of(
                 column("BM25", "lexical", bm25, queryId),
                 column("Embeddings", "semantic", dense, queryId),
                 column("Hybrid", "RRF k=60", hybrid, queryId)
         );
-        return new SearchView(query, true, queryId != null, resolved.source(), null, columns, HERO_QUERIES,
-                pickerTotal, pickerGroups);
+        return new SearchView(query, true, queryId != null, resolved.value().source(), null, columns,
+                timing(resolved.millis(), start), HERO_QUERIES, pickerTotal, pickerGroups);
+    }
+
+    /**
+     * The total covers everything this method did, so it exceeds the sum of the
+     * retrieval timings: it also includes the fixture lookup and loading titles for
+     * the rows on screen.
+     */
+    private static SearchView.Timing timing(Double embeddingMillis, long startNanos) {
+        double total = (System.nanoTime() - startNanos) / 1_000_000.0;
+        return new SearchView.Timing(embeddingMillis, total, DISPLAY_K, CANDIDATE_DEPTH);
     }
 
     /**
@@ -120,7 +134,8 @@ public class SearchService {
         return (queryClass == null || queryClass.isBlank()) ? "—" : queryClass;
     }
 
-    private SearchView.Column column(String method, String subtitle, List<SearchResult> results, Long queryId) {
+    private SearchView.Column column(String method, String subtitle, Timed<List<SearchResult>> timed, Long queryId) {
+        List<SearchResult> results = timed.value();
         Set<Long> ids = new LinkedHashSet<>(results.stream().map(SearchResult::chunkId).toList());
         Map<Long, ChunkRecord> chunks = chunksGateway.findSummaries(ids);
 
@@ -133,6 +148,6 @@ public class SearchService {
             String relevance = queryId != null ? fixtureIndex.relevance(queryId, result.chunkId()) : null;
             views.add(new SearchView.Result(rank++, result.chunkId(), name, category, relevance));
         }
-        return new SearchView.Column(method, subtitle, views);
+        return new SearchView.Column(method, subtitle, timed.millis(), views);
     }
 }

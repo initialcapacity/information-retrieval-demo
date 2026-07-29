@@ -263,6 +263,25 @@ main > section > header > .lede {
   letter-spacing: 0;
   margin-left: var(--space-3);
 }
+/* Per-method latency, pushed to the trailing edge of the column header.
+   Tabular figures so the three columns' digits line up across cards. */
+.subsection-title > .ms {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.latency-note {
+  margin-top: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  max-width: 78ch;
+  text-wrap: pretty;
+}
 
 /* ============================================================
    BRAND MARK — SVG wordmark (matches initialcapacity.io).

@@ -79,7 +79,10 @@
                 <span class="badge">ad-hoc query: no relevance labels</span>
             </#if>
             <#if view.embeddingSource()??>
-                <span class="badge">embedding: ${view.embeddingSource()}</span>
+                <span class="badge">embedding: ${view.embeddingSource()}<#if view.timing()?? && view.timing().embedding()??> &middot; ${view.timing().embedding()}</#if></span>
+            </#if>
+            <#if view.timing()??>
+                <span class="badge">server total: ${view.timing().total()}</span>
             </#if>
         </div>
 
@@ -96,6 +99,7 @@
                     <div class="subsection-title" style="margin-bottom: var(--space-4);">
                         ${column.method()}
                         <small>${column.subtitle()}</small>
+                        <span class="ms" title="Server-side wall clock for this method's query">${column.latency()}</span>
                     </div>
                     <#if column.results()?size == 0>
                         <p style="color: var(--text-muted); font-size: var(--fs-sm);">No results.</p>
@@ -122,6 +126,17 @@
                 </div>
             </#list>
         </div>
+
+        <#if view.timing()??>
+            <p class="latency-note">
+                Timings are server-side wall clock, one measurement per request.
+                BM25 and embeddings each return ${view.timing().displayK()} results;
+                the hybrid retrieves ${view.timing().candidateDepth()} from both methods before fusing,
+                so it does the most work.
+                A query outside the committed cache also pays a live embedding round trip.
+                The first query after startup carries JIT and connection-pool warmup: run it twice for a warm number.
+            </p>
+        </#if>
     </#if>
 </section>
 

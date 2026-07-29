@@ -41,6 +41,21 @@ Fixture query embeddings ship committed (`fixture-query-embeddings.tsv` and `dat
 3. **The hybrid query.** Click `writes are slow when many clients commit at once`. BM25 finds 4 of 9 relevant sections, embeddings find a different 4 (only 2 shared), and the hybrid column shows 7 of 9 with the top four rows all relevant, including sections neither method ranked in its top 10.
 4. **The numbers.** Open the Eval view. The eval scores all three methods with the same measure: BM25 0.349, embeddings 0.366, hybrid 0.403 F1 (Exact-only, k=10). The per-bucket table shows keyword queries scoring best with BM25 and semantic queries with embeddings, with the hybrid highest overall.
 
+## Latency
+
+Each column header carries the server-side wall clock for that method's query, and the badge row above carries the query-embedding time and the request total. Warm numbers on an M-series laptop against the containerised Postgres, top 10 per method:
+
+| step | time |
+| --- | --- |
+| BM25 (`pg_search`) | 31-34 ms |
+| Embeddings (pgvector HNSW, `ef_search=400`) | 7-8 ms |
+| Hybrid (both at depth 100, then RRF) | 38-43 ms |
+| Query embedding, cache hit | under 0.1 ms |
+| Query embedding, live OpenAI call | 180-450 ms (2 s on the first call of the process) |
+| Request total | 80-85 ms |
+
+One measurement per request, so the first query after startup carries JIT and pool warmup; run it twice for a warm number. The request total exceeds the sum of the three methods because it also loads section titles for the rows on screen. The live embedding round trip dominates everything else, which is why the hero queries serve from the committed cache.
+
 ## Regenerate the eval snapshot
 
 ```bash
