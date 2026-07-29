@@ -2,8 +2,8 @@ package io.ic.starter.testsupport;
 
 import io.ic.starter.websupport.App;
 import io.ic.starter.websupport.AppSetup;
-import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.config.RoutesConfig;
 import io.javalin.http.Handler;
 
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class TestServer {
         }
 
         @Override
-        public void configureEndpoints(Javalin javalin) {
+        public void configureEndpoints(RoutesConfig routes) {
             Handler handle = ctx -> {
                 receivedCalls.add(new Call(ctx.method().name(), ctx.path(), ctx.body()));
 
@@ -82,13 +82,13 @@ public class TestServer {
                 ctx.status(404);
                 ctx.result("Not found");
             };
-            javalin.get("*", handle);
-            javalin.post("*", handle);
-            javalin.put("*", handle);
-            javalin.patch("*", handle);
-            javalin.options("*", handle);
-            javalin.head("*", handle);
-            javalin.delete("*", handle);
+            routes.get("*", handle);
+            routes.post("*", handle);
+            routes.put("*", handle);
+            routes.patch("*", handle);
+            routes.options("*", handle);
+            routes.head("*", handle);
+            routes.delete("*", handle);
         }
     }
 }

@@ -12,8 +12,8 @@ import io.ic.starter.search.HybridSearchService;
 import io.ic.starter.search.OpenAiEmbeddingClient;
 import io.ic.starter.starterenv.Environment;
 import io.ic.starter.websupport.AppSetup;
-import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.config.RoutesConfig;
 import io.javalin.rendering.template.JavalinFreemarker;
 
 public class StarterSetup implements AppSetup {
@@ -36,7 +36,7 @@ public class StarterSetup implements AppSetup {
     }
 
     @Override
-    public void configureEndpoints(Javalin javalin) {
+    public void configureEndpoints(RoutesConfig routes) {
         // ef_search parity with the eval: the pgvector default (40) under-retrieves.
         dataSource = DataSourceFactory.create(env.databaseUrl(), 10, "set hnsw.ef_search = 400");
 
@@ -57,9 +57,9 @@ public class StarterSetup implements AppSetup {
         var evalController = new EvalController(new EvalReportLoader().load());
         var healthGateway = new HealthGateway(dataSource);
 
-        javalin.get("/", searchController::index);
-        javalin.get("/eval", evalController::index);
-        javalin.get("/health", ctx -> ctx.result(healthGateway.isDatabaseHealthy() ? "ok" : "unhealthy"));
+        routes.get("/", searchController::index);
+        routes.get("/eval", evalController::index);
+        routes.get("/health", ctx -> ctx.result(healthGateway.isDatabaseHealthy() ? "ok" : "unhealthy"));
     }
 
     @Override

@@ -9,7 +9,7 @@ The documents: 1,779 section-level chunks parsed from the official `postgresql-1
 ## Prerequisites
 
 - Docker (running)
-- JDK 26 (the Gradle wrapper is 9.5.1, which supports running on JDK 26)
+- JDK 26 (the Gradle wrapper is 9.6.1, which supports running on JDK 26)
 - `OPENAI_API_KEY` set in `.env` (used to backfill chunk embeddings and to embed ad-hoc queries; the core demo serves from a committed cache)
 
 ## One-time setup

@@ -4,8 +4,8 @@ import io.ic.starter.testsupport.CookieSupport;
 import io.ic.starter.websupport.App;
 import io.ic.starter.websupport.AppSetup;
 import io.ic.starter.websupport.cookies.Signer;
-import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.config.RoutesConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +27,12 @@ public class CookieSupportTest {
         }
 
         @Override
-        public void configureEndpoints(Javalin javalin) {
-            javalin.get("/set-cookie", ctx -> {
+        public void configureEndpoints(RoutesConfig routes) {
+            routes.get("/set-cookie", ctx -> {
                 ctx.cookie("starter-session", signer.sign("session-payload"));
                 ctx.cookie("other-cookie", "abc");
             });
-            javalin.get("/no-cookies", ctx -> ctx.result("ok"));
+            routes.get("/no-cookies", ctx -> ctx.result("ok"));
         }
     });
 

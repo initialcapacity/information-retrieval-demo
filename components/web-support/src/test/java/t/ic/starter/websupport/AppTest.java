@@ -2,8 +2,8 @@ package t.ic.starter.websupport;
 
 import io.ic.starter.websupport.App;
 import io.ic.starter.websupport.AppSetup;
-import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.config.RoutesConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,8 +22,8 @@ public class AppTest {
         }
 
         @Override
-        public void configureEndpoints(Javalin javalin) {
-            javalin.get("/", ctx -> ctx.result("Test App"));
+        public void configureEndpoints(RoutesConfig routes) {
+            routes.get("/", ctx -> ctx.result("Test App"));
         }
     }
 

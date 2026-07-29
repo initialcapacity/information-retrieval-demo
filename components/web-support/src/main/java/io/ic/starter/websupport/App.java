@@ -16,14 +16,12 @@ public class App {
 
     public App(AppSetup setup) {
         this.setup = setup;
-        javalin = Javalin
-                .create(javalinConfig -> {
-                    javalinConfig.showJavalinBanner = false;
-                    this.setup.configureServer(javalinConfig);
-                })
-                .events(event -> event.serverStarted(() -> startedFuture.complete(null)));
-
-        this.setup.configureEndpoints(javalin);
+        javalin = Javalin.create(javalinConfig -> {
+            javalinConfig.startup.showJavalinBanner = false;
+            javalinConfig.events.serverStarted(() -> startedFuture.complete(null));
+            this.setup.configureServer(javalinConfig);
+            this.setup.configureEndpoints(javalinConfig.routes);
+        });
     }
 
     public void start(int port) {

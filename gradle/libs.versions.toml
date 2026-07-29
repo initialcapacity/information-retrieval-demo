@@ -1,16 +1,16 @@
 [versions]
-javalin = "6.7.0"
-slf4j = "2.0.17"
+javalin = "7.2.2"
+slf4j = "2.0.18"
 freemarker = "2.3.34"
-junit = "6.0.2"
-jackson = "2.20.1"
-hikari = "7.0.2"
-postgresql = "42.7.9"
-flyway = "11.20.2"
+junit = "6.1.2"
+jackson = "2.22.1"
+hikari = "7.1.0"
+postgresql = "42.7.13"
+flyway = "13.0.0"
 
 [libraries]
 javalin-core = { module = "io.javalin:javalin", version.ref = "javalin" }
-javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
+javalin-rendering-freemarker = { module = "io.javalin:javalin-rendering-freemarker", version.ref = "javalin" }
 freemarker = { module = "org.freemarker:freemarker", version.ref = "freemarker" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
@@ -26,7 +26,7 @@ flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 app = [
     "slf4j-simple",
     "javalin-core",
-    "javalin-rendering",
+    "javalin-rendering-freemarker",
     "freemarker",
 ]
 test = [
@@ -41,4 +41,4 @@ java = [
 ]
 
 [plugins]
-shadow = { id = "com.gradleup.shadow", version = "9.3.1" }
+shadow = { id = "com.gradleup.shadow", version = "9.6.1" }

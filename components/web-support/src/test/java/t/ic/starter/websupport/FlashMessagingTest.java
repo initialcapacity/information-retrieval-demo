@@ -3,8 +3,8 @@ package t.ic.starter.websupport;
 import freemarker.template.Version;
 import io.ic.starter.websupport.App;
 import io.ic.starter.websupport.AppSetup;
-import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.config.RoutesConfig;
 import io.javalin.rendering.template.JavalinFreemarker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,21 +31,21 @@ public class FlashMessagingTest {
         }
 
         @Override
-        public void configureEndpoints(Javalin javalin) {
-            javalin.get("/same-request", ctx -> {
+        public void configureEndpoints(RoutesConfig routes) {
+            routes.get("/same-request", ctx -> {
                 addFlash(ctx, "a message");
                 addFlash(ctx, "another message");
                 renderWithFlash(ctx, "show-flash.ftl");
             });
-            javalin.get("/set", ctx -> {
+            routes.get("/set", ctx -> {
                 addFlash(ctx, "a message");
                 addFlash(ctx, "another message");
                 ctx.redirect("/read");
             });
-            javalin.get("/read", ctx -> {
+            routes.get("/read", ctx -> {
                 renderWithFlash(ctx, "show-flash.ftl");
             });
-            javalin.get("/read-with-other", ctx -> {
+            routes.get("/read-with-other", ctx -> {
                 renderWithFlash(ctx, "show-flash.ftl", Map.of("other", "some other message"));
             });
         }

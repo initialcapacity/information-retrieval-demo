@@ -4,8 +4,8 @@ import io.ic.starter.websupport.App;
 import io.ic.starter.websupport.AppSetup;
 import io.ic.starter.websupport.cookies.SignedCookie;
 import io.ic.starter.websupport.cookies.Signer;
-import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.config.RoutesConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,16 +25,16 @@ public class SignedCookieTest {
         }
 
         @Override
-        public void configureEndpoints(Javalin javalin) {
-            javalin.get("/set", ctx -> {
+        public void configureEndpoints(RoutesConfig routes) {
+            routes.get("/set", ctx -> {
                 var value = ctx.queryParam("value");
                 signedCookie.set(ctx, value);
             });
-            javalin.get("/get", ctx -> {
+            routes.get("/get", ctx -> {
                 var value = signedCookie.get(ctx);
                 ctx.result(value.orElse(""));
             });
-            javalin.get("/clear", signedCookie::clear);
+            routes.get("/clear", signedCookie::clear);
         }
     });
 
