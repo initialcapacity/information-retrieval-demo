@@ -50,9 +50,9 @@
                                     <span class="count">${g.count()}</span>
                                 </div>
                                 <#list g.queries() as item>
-                                    <button type="button" class="qitem" role="option" data-q="${item.query()?html}">
-                                        <span class="q">${item.query()?html}</span>
-                                        <span class="qcat">${item.category()?html}</span>
+                                    <button type="button" class="qitem" role="option" data-q="${item.query()}">
+                                        <span class="q">${item.query()}</span>
+                                        <span class="qcat">${item.category()}</span>
                                         <span class="qn"><b>${item.exact()}</b> exact</span>
                                     </button>
                                 </#list>
@@ -88,7 +88,7 @@
 
         <#if view.error()??>
             <div class="card" style="border-left: 3px solid var(--warning);">
-                <strong>Embeddings and hybrid unavailable.</strong>
+                <strong>${view.errorTitle()}</strong>
                 <p style="color: var(--text-muted); margin-top: var(--space-2);">${view.error()}</p>
             </div>
         </#if>

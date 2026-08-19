@@ -37,7 +37,9 @@ public class EvalMain {
     public static void main(String[] args) {
         String databaseUrl = System.getenv("DATABASE_URL");
         Path labelCsv = Path.of(args.length > 0 ? args[0] : "data/pgdocs/qrels.tsv");
-        Path cacheFile = Path.of(args.length > 1 ? args[1] : "data/query-embeddings.tsv");
+        Path cacheFile = Path.of(args.length > 1
+                ? args[1]
+                : "applications/search/src/main/resources/fixture-query-embeddings.tsv");
 
         // Raise HNSW ef_search well above the candidate depth: the pgvector default
         // (40) under-retrieves and was artificially depressing dense/hybrid.
@@ -51,7 +53,7 @@ public class EvalMain {
 
         var qrels = new QrelsLoader().load(labelCsv, queryIds, QrelsLoader.Mode.EXACT_AND_PARTIAL);
         var qrelsExact = new QrelsLoader().load(labelCsv, queryIds, QrelsLoader.Mode.EXACT_ONLY);
-        var cache = new QueryEmbeddingCache(cacheFile);
+        var cache = new QueryEmbeddingCache(cacheFile, queries);
 
         RankingFunction bm25 = q -> ReciprocalRankFusion.toIds(bm25Gateway.search(q.query(), CANDIDATE_DEPTH));
         RankingFunction dense = q -> ReciprocalRankFusion.toIds(embeddingGateway.search(cache.get(q.queryId()), CANDIDATE_DEPTH));

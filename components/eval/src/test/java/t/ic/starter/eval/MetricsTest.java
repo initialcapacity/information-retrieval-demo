@@ -27,6 +27,11 @@ public class MetricsTest {
     }
 
     @Test
+    void precisionAtK_usesKWhenFewerResultsAreReturned() {
+        assertEquals(0.2, Metrics.precisionAtK(List.of(2L, 3L), Set.of(2L), 5), 1e-9);
+    }
+
+    @Test
     void recallAtK() {
         var retrieved = List.of(1L, 2L, 3L);
         var relevant = Set.of(2L, 4L, 6L, 8L);

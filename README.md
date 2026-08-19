@@ -2,7 +2,7 @@
 
 A Java search demo comparing BM25 (keyword), embeddings (semantic), and their RRF hybrid over the PostgreSQL 18 manual: the retrieval component of a docs assistant, searching the documentation of the very database that serves it. Built for the DubJUG talk.
 
-Stack: Java 26, Javalin, Postgres 18 with `pg_search` (BM25) and `pgvector` (embeddings), all in one database via the `paradedb/paradedb:pg18` image. Retrieval config: k=10, RRF k=60, `hnsw.ef_search=400`.
+Stack: Java 26, Javalin, Postgres 18 with `pg_search` (BM25) and `pgvector` (embeddings), all in one database via the pinned `paradedb/paradedb:0.25.3-pg18` image. Retrieval config: k=10, RRF k=60, `hnsw.ef_search=400`.
 
 The documents: 1,779 section-level chunks parsed from the official `postgresql-18.1-docs.tar.gz` (PostgreSQL License), committed at `data/pgdocs/chunks.tsv`. Relevance labels are LLM judgments (UMBRELA-style, graded 0-3 and binarized) over pooled BM25 + embedding candidates for 56 hand-written developer queries; `Exact` means grade >= 2 (answers the query), `Partial` means grade 1 (related).
 
@@ -24,7 +24,7 @@ set -a && . ./.env && set +a                         # load DATABASE_URL + OPENA
 ./gradlew :applications:tools:backfillEmbeddings     # embed chunks + build HNSW (~2 min, one OpenAI pass)
 ```
 
-Fixture query embeddings ship committed (`fixture-query-embeddings.tsv` and `data/query-embeddings.tsv`), so search over fixture queries and the eval run offline. `cacheQueryEmbeddings` regenerates them if the fixture changes.
+Fixture query embeddings ship in one canonical committed cache (`applications/search/src/main/resources/fixture-query-embeddings.tsv`), so search over fixture queries and the eval run offline. Its metadata records the model, dimensions, and fixture fingerprint; `cacheQueryEmbeddings` regenerates the cache and metadata if the fixture changes. Qrels remain canonical at `data/pgdocs/qrels.tsv` and are packaged into the web app by `processResources`.
 
 ## Run
 

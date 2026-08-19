@@ -9,6 +9,8 @@ import io.ic.starter.search.EmbeddingGateway;
 import io.ic.starter.search.HybridSearchService;
 import io.ic.starter.search.SearchResult;
 import io.ic.starter.search.Timed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
  * relevance.
  */
 public class SearchService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchService.class);
     private static final int DISPLAY_K = 10;     // results shown per column on stage, aligned with the eval k
     private static final int CANDIDATE_DEPTH = 100;
 
@@ -54,12 +57,18 @@ public class SearchService {
     }
 
     public SearchView blank() {
-        return new SearchView("", false, false, null, null, List.of(), null, HERO_QUERIES, pickerTotal, pickerGroups);
+        return new SearchView("", false, false, null, null, null, List.of(), null,
+                HERO_QUERIES, pickerTotal, pickerGroups);
     }
 
     public SearchView search(String query) {
         if (query == null || query.isBlank()) {
             return blank();
+        }
+        if (query.length() > QueryEmbeddingResolver.MAX_QUERY_CHARACTERS) {
+            return new SearchView(query, true, false, null, "Query is too long",
+                    "Queries are limited to " + QueryEmbeddingResolver.MAX_QUERY_CHARACTERS + " characters.",
+                    List.of(), null, HERO_QUERIES, pickerTotal, pickerGroups);
         }
         long start = System.nanoTime();
         Long queryId = fixtureIndex.queryId(query).orElse(null);
@@ -71,8 +80,14 @@ public class SearchService {
             resolved = Timed.of(() -> embeddingResolver.resolve(query));
         } catch (RuntimeException e) {
             // BM25 still renders; dense/hybrid need an embedding.
+            LOGGER.warn("Embedding unavailable; returning BM25-only results", e);
             var columns = List.of(column("BM25", "lexical", bm25, queryId));
-            return new SearchView(query, true, queryId != null, null, e.getMessage(), columns,
+            String message = e instanceof IllegalStateException && e.getMessage() != null
+                    && e.getMessage().startsWith("No cached embedding")
+                    ? e.getMessage()
+                    : "The embedding service could not process this query. BM25 results are still available.";
+            return new SearchView(query, true, queryId != null, null, "Embeddings and hybrid unavailable",
+                    message, columns,
                     timing(null, start), HERO_QUERIES, pickerTotal, pickerGroups);
         }
 
@@ -86,7 +101,7 @@ public class SearchService {
                 column("Embeddings", "semantic", dense, queryId),
                 column("Hybrid", "RRF k=60", hybrid, queryId)
         );
-        return new SearchView(query, true, queryId != null, resolved.value().source(), null, columns,
+        return new SearchView(query, true, queryId != null, resolved.value().source(), null, null, columns,
                 timing(resolved.millis(), start), HERO_QUERIES, pickerTotal, pickerGroups);
     }
 

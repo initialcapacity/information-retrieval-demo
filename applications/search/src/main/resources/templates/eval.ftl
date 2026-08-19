@@ -21,7 +21,7 @@
                 <p class="eval-note">Only sections judged to answer the query count as relevant. It is the strict bar, and where the pattern is clearest: F1 rises from BM25 to embeddings to hybrid.</p>
             </#if>
 
-            <p class="eval-caption">Overall quality per method: precision, recall, and F1 at k=${report.k()}, macro-averaged across every fixture query. The hybrid row is highlighted.</p>
+            <p class="eval-caption">Overall quality per method: precision, recall, and F1 at k=${report.k()}, macro-averaged across every fixture query. F1 is the mean of each query's F1, not the harmonic mean of the two displayed averages. The hybrid row is highlighted.</p>
             <div class="card" style="margin-bottom: var(--space-6);">
                 <table class="table">
                     <thead>

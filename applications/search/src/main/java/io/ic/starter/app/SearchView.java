@@ -11,6 +11,7 @@ public record SearchView(
         boolean submitted,
         boolean fixtureQuery,
         String embeddingSource,
+        String errorTitle,
         String error,
         List<Column> columns,
         Timing timing,

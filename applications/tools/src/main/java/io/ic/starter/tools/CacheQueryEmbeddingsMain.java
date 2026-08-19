@@ -14,27 +14,29 @@ import java.util.List;
 public class CacheQueryEmbeddingsMain {
     public static void main(String[] args) {
         String apiKey = System.getenv("OPENAI_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("OPENAI_API_KEY is required to cache query embeddings");
-        }
-        Path cacheFile = Path.of(args.length > 0 ? args[0] : "data/query-embeddings.tsv");
+        Path cacheFile = Path.of(args.length > 0
+                ? args[0]
+                : "applications/search/src/main/resources/fixture-query-embeddings.tsv");
 
         List<FixtureQuery> queries = new FixtureLoader().load();
-        var cache = new QueryEmbeddingCache(cacheFile);
-        var client = new OpenAiEmbeddingClient(apiKey);
+        var cache = new QueryEmbeddingCache(cacheFile, queries, true);
 
         List<FixtureQuery> missing = queries.stream().filter(q -> !cache.contains(q.queryId())).toList();
         System.out.printf("Fixture queries: %d, cached: %d, to embed: %d%n",
                 queries.size(), cache.size(), missing.size());
 
         if (!missing.isEmpty()) {
+            if (apiKey == null || apiKey.isBlank()) {
+                throw new IllegalStateException("OPENAI_API_KEY is required to cache missing query embeddings");
+            }
+            var client = new OpenAiEmbeddingClient(apiKey);
             List<String> texts = missing.stream().map(FixtureQuery::query).toList();
             List<float[]> vectors = client.embed(texts);
             for (int i = 0; i < missing.size(); i++) {
                 cache.put(missing.get(i).queryId(), vectors.get(i));
             }
-            cache.save();
         }
+        cache.save();
         System.out.println("Query embeddings cached: " + cache.size() + " -> " + cacheFile.toAbsolutePath());
     }
 }

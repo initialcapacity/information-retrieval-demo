@@ -31,7 +31,7 @@ public class BackfillMain {
 
         long total = gateway.count();
         long alreadyDone = gateway.countWithEmbeddings();
-        System.out.printf("Products: %d, already embedded: %d%n", total, alreadyDone);
+        System.out.printf("Chunks: %d, already embedded: %d%n", total, alreadyDone);
 
         long processed = 0;
         long startTime = System.currentTimeMillis();

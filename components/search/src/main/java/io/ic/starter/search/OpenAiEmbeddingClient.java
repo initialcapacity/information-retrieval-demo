@@ -19,12 +19,20 @@ import java.util.List;
  */
 public class OpenAiEmbeddingClient implements EmbeddingClient {
     private static final String DEFAULT_MODEL = "text-embedding-3-small";
-    private static final int MAX_RETRIES = 6;
+    private static final int DEFAULT_MAX_ATTEMPTS = 6;
+    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(20);
+    private static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(120);
+    private static final long DEFAULT_INITIAL_BACKOFF_MILLIS = 1_000;
+    private static final long DEFAULT_MAX_BACKOFF_MILLIS = 30_000;
 
     private final String apiKey;
     private final String model;
     private final String baseUrl;
     private final HttpClient httpClient;
+    private final int maxAttempts;
+    private final Duration requestTimeout;
+    private final long initialBackoffMillis;
+    private final long maxBackoffMillis;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public OpenAiEmbeddingClient(String apiKey) {
@@ -32,12 +40,29 @@ public class OpenAiEmbeddingClient implements EmbeddingClient {
     }
 
     public OpenAiEmbeddingClient(String apiKey, String model, String baseUrl) {
+        this(apiKey, model, baseUrl, DEFAULT_MAX_ATTEMPTS, DEFAULT_CONNECT_TIMEOUT,
+                DEFAULT_REQUEST_TIMEOUT, DEFAULT_INITIAL_BACKOFF_MILLIS, DEFAULT_MAX_BACKOFF_MILLIS);
+    }
+
+    private OpenAiEmbeddingClient(String apiKey, String model, String baseUrl, int maxAttempts,
+                                  Duration connectTimeout, Duration requestTimeout,
+                                  long initialBackoffMillis, long maxBackoffMillis) {
         this.apiKey = apiKey;
         this.model = model;
         this.baseUrl = baseUrl;
+        this.maxAttempts = maxAttempts;
+        this.requestTimeout = requestTimeout;
+        this.initialBackoffMillis = initialBackoffMillis;
+        this.maxBackoffMillis = maxBackoffMillis;
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(20))
+                .connectTimeout(connectTimeout)
                 .build();
+    }
+
+    public static OpenAiEmbeddingClient forInteractiveRequests(String apiKey) {
+        return new OpenAiEmbeddingClient(
+                apiKey, DEFAULT_MODEL, "https://api.openai.com", 2,
+                Duration.ofSeconds(3), Duration.ofSeconds(10), 500, 2_000);
     }
 
     @Override
@@ -57,7 +82,7 @@ public class OpenAiEmbeddingClient implements EmbeddingClient {
                     .uri(URI.create(baseUrl + "/v1/embeddings"))
                     .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
-                    .timeout(Duration.ofSeconds(120))
+                    .timeout(requestTimeout)
                     .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
                     .build();
 
@@ -89,7 +114,7 @@ public class OpenAiEmbeddingClient implements EmbeddingClient {
 
     private HttpResponse<String> sendWithRetry(HttpRequest request) throws Exception {
         Exception last = null;
-        for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 int status = response.statusCode();
@@ -97,24 +122,30 @@ public class OpenAiEmbeddingClient implements EmbeddingClient {
                     return response;
                 }
                 if (status == 429 || status >= 500) {
-                    sleepBackoff(attempt);
                     last = new RuntimeException("OpenAI HTTP " + status + ": " + response.body());
+                    if (attempt + 1 < maxAttempts) {
+                        sleepBackoff(attempt);
+                    }
                     continue;
                 }
                 throw new RuntimeException("OpenAI HTTP " + status + ": " + response.body());
             } catch (java.io.IOException e) {
                 last = e;
-                sleepBackoff(attempt);
+                if (attempt + 1 < maxAttempts) {
+                    sleepBackoff(attempt);
+                }
             }
         }
-        throw new RuntimeException("OpenAI request failed after " + MAX_RETRIES + " attempts", last);
+        throw new RuntimeException("OpenAI request failed after " + maxAttempts + " attempts", last);
     }
 
     private void sleepBackoff(int attempt) {
         try {
-            Thread.sleep(Math.min(30_000L, (long) (1000 * Math.pow(2, attempt))));
+            long multiplier = 1L << Math.min(attempt, 20);
+            Thread.sleep(Math.min(maxBackoffMillis, initialBackoffMillis * multiplier));
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
+            throw new RuntimeException("OpenAI request interrupted", ie);
         }
     }
 }

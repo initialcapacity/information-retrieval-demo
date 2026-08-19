@@ -10,12 +10,12 @@ import java.util.Set;
 public class Metrics {
 
     public static double precisionAtK(List<Long> retrieved, Set<Long> relevant, int k) {
-        List<Long> top = retrieved.stream().limit(k).toList();
-        if (top.isEmpty()) {
+        if (k <= 0) {
             return 0.0;
         }
+        List<Long> top = retrieved.stream().limit(k).toList();
         long hits = top.stream().filter(relevant::contains).count();
-        return (double) hits / top.size();
+        return (double) hits / k;
     }
 
     public static double recallAtK(List<Long> retrieved, Set<Long> relevant, int k) {

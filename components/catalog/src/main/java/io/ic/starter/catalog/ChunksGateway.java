@@ -40,13 +40,22 @@ public class ChunksGateway {
     }
 
     /**
-     * Batch-inserts chunks, deriving search_text from title + text.
+     * Atomically reconciles the chunks table with the supplied corpus. Changed
+     * searchable text invalidates its old embedding; rows absent from the incoming
+     * corpus are deleted.
      */
-    public void insertBatch(List<DocChunk> chunks) {
-        databaseTemplate.inTransaction(connection -> {
-            String sql = "insert into chunks (chunk_id, title, page, search_text) " +
-                    "values (?, ?, ?, ?) on conflict (chunk_id) do nothing";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+    public Reconciliation replaceAll(List<DocChunk> chunks) {
+        if (chunks.isEmpty()) {
+            throw new IllegalArgumentException("Refusing to replace the corpus with no chunks");
+        }
+        return databaseTemplate.inTransaction(connection -> {
+            databaseTemplate.execute(
+                    "create temporary table incoming_chunks (" +
+                            "chunk_id bigint primary key, title text, page text, search_text text" +
+                            ") on commit drop",
+                    connection);
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "insert into incoming_chunks (chunk_id, title, page, search_text) values (?, ?, ?, ?)")) {
                 for (DocChunk chunk : chunks) {
                     statement.setLong(1, chunk.chunkId());
                     statement.setString(2, chunk.title());
@@ -58,7 +67,26 @@ public class ChunksGateway {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            return null;
+
+            int insertedOrChanged = databaseTemplate.execute(
+                    "insert into chunks (chunk_id, title, page, search_text) " +
+                            "select chunk_id, title, page, search_text from incoming_chunks " +
+                            "on conflict (chunk_id) do update set " +
+                            "title = excluded.title, " +
+                            "page = excluded.page, " +
+                            "search_text = excluded.search_text, " +
+                            "embedding = case " +
+                            "when chunks.search_text is distinct from excluded.search_text then null " +
+                            "else chunks.embedding end " +
+                            "where (chunks.title, chunks.page, chunks.search_text) " +
+                            "is distinct from (excluded.title, excluded.page, excluded.search_text)",
+                    connection);
+            int deleted = databaseTemplate.execute(
+                    "delete from chunks where not exists (" +
+                            "select 1 from incoming_chunks where incoming_chunks.chunk_id = chunks.chunk_id" +
+                            ")",
+                    connection);
+            return new Reconciliation(chunks.size(), insertedOrChanged, deleted);
         });
     }
 
@@ -114,6 +142,9 @@ public class ChunksGateway {
     }
 
     public record EmbeddingUpdate(long chunkId, String vectorLiteral) {
+    }
+
+    public record Reconciliation(int incoming, int insertedOrChanged, int deleted) {
     }
 
     private ChunkRecord mapChunk(ResultSet rs) throws SQLException {

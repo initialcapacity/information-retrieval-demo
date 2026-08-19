@@ -19,15 +19,9 @@ import java.util.function.Consumer;
  * Maps a typed query back to a fixture query (by normalized text) and answers
  * relevance for a chunk under that query, using the committed fixture qrels
  * (Exact + Partial). All data is read from the classpath - no network, no DB.
- *
- * Also loads hero qrels: relevance labels for out-of-band demo queries (e.g.
- * "bathroom vanity knobs") that are deliberately excluded from the eval fixture
- * but should still show Exact/Partial badges in the UI. This does not affect the
- * eval, which reads only the fixture.
  */
 public class FixtureIndex {
     private static final String QRELS_RESOURCE = "/fixture-qrels.tsv";
-    private static final String HERO_QRELS_RESOURCE = "/hero-qrels.tsv";
 
     private final Map<String, Long> queryIdByText = new HashMap<>();
     private final Map<Long, Map<Long, String>> relevanceByQuery = new HashMap<>();
@@ -36,19 +30,14 @@ public class FixtureIndex {
         for (FixtureQuery query : new FixtureLoader().load()) {
             queryIdByText.put(QueryText.normalize(query.query()), query.queryId());
         }
-        // Fixture qrels (required): query_id, chunk_id, label.
-        readQrels(QRELS_RESOURCE, true, f -> {
-            long queryId = Long.parseLong(f[0].trim());
-            long chunkId = Long.parseLong(f[1].trim());
-            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(chunkId, f[2].trim());
-        });
-        // Hero qrels (optional) carry the query text, so each row also registers
-        // the text->id mapping: query_id, query, chunk_id, label.
-        readQrels(HERO_QRELS_RESOURCE, false, f -> {
-            long queryId = Long.parseLong(f[0].trim());
+        // Canonical qrels: id, query_id, chunk_id, label.
+        readQrels(QRELS_RESOURCE, f -> {
+            long queryId = Long.parseLong(f[1].trim());
             long chunkId = Long.parseLong(f[2].trim());
-            queryIdByText.put(QueryText.normalize(f[1]), queryId);
-            relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(chunkId, f[3].trim());
+            String label = f[3].trim();
+            if (label.equals("Exact") || label.equals("Partial")) {
+                relevanceByQuery.computeIfAbsent(queryId, _ -> new HashMap<>()).put(chunkId, label);
+            }
         });
     }
 
@@ -61,13 +50,10 @@ public class FixtureIndex {
         return relevanceByQuery.getOrDefault(queryId, Map.of()).get(chunkId);
     }
 
-    private void readQrels(String resource, boolean required, Consumer<String[]> onRow) {
+    private void readQrels(String resource, Consumer<String[]> onRow) {
         try (InputStream stream = FixtureIndex.class.getResourceAsStream(resource)) {
             if (stream == null) {
-                if (required) {
-                    throw new IllegalStateException("Missing " + resource + " on classpath");
-                }
-                return;
+                throw new IllegalStateException("Missing " + resource + " on classpath");
             }
             var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             reader.readLine(); // header

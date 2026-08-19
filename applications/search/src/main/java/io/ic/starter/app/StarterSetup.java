@@ -1,6 +1,7 @@
 package io.ic.starter.app;
 
 import com.zaxxer.hikari.HikariDataSource;
+import freemarker.core.HTMLOutputFormat;
 import freemarker.template.Version;
 import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.databasesupport.DataSourceFactory;
@@ -26,13 +27,20 @@ public class StarterSetup implements AppSetup {
 
     @Override
     public void configureServer(JavalinConfig javalinConfig) {
+        var freemarkerConfig = freemarkerConfiguration();
+        javalinConfig.fileRenderer(new JavalinFreemarker(freemarkerConfig));
+        javalinConfig.staticFiles.add("/static");
+    }
+
+    static freemarker.template.Configuration freemarkerConfiguration() {
         var freemarkerConfig = new freemarker.template.Configuration(new Version(2, 3, 34));
         freemarkerConfig.setClassForTemplateLoading(JavalinFreemarker.class, "/templates");
         freemarkerConfig.setOutputEncoding("UTF-8");
         freemarkerConfig.setURLEscapingCharset("UTF-8");
-
-        javalinConfig.fileRenderer(new JavalinFreemarker(freemarkerConfig));
-        javalinConfig.staticFiles.add("/static");
+        freemarkerConfig.setOutputFormat(HTMLOutputFormat.INSTANCE);
+        freemarkerConfig.setAutoEscapingPolicy(
+                freemarker.template.Configuration.ENABLE_IF_SUPPORTED_AUTO_ESCAPING_POLICY);
+        return freemarkerConfig;
     }
 
     @Override
@@ -47,7 +55,7 @@ public class StarterSetup implements AppSetup {
 
         EmbeddingClient embeddingClient = (env.openAiApiKey() == null || env.openAiApiKey().isBlank())
                 ? null
-                : new OpenAiEmbeddingClient(env.openAiApiKey());
+                : OpenAiEmbeddingClient.forInteractiveRequests(env.openAiApiKey());
         var embeddingResolver = new QueryEmbeddingResolver(embeddingClient);
         var fixtureIndex = new FixtureIndex();
 
@@ -56,10 +64,11 @@ public class StarterSetup implements AppSetup {
         var searchController = new SearchController(searchService);
         var evalController = new EvalController(new EvalReportLoader().load());
         var healthGateway = new HealthGateway(dataSource);
+        var healthController = new HealthController(healthGateway::isDatabaseHealthy);
 
         routes.get("/", searchController::index);
         routes.get("/eval", evalController::index);
-        routes.get("/health", ctx -> ctx.result(healthGateway.isDatabaseHealthy() ? "ok" : "unhealthy"));
+        routes.get("/health", healthController::index);
     }
 
     @Override

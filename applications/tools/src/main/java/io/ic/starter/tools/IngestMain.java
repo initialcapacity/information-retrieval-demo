@@ -1,5 +1,6 @@
 package io.ic.starter.tools;
 
+import com.zaxxer.hikari.HikariDataSource;
 import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.catalog.DocChunk;
 import io.ic.starter.catalog.DocsLoader;
@@ -17,22 +18,17 @@ public class IngestMain {
         String databaseUrl = System.getenv("DATABASE_URL");
         Path chunksTsv = Path.of(args.length > 0 ? args[0] : "data/pgdocs/chunks.tsv");
 
-        var dataSource = DataSourceFactory.create(databaseUrl);
-        var gateway = new ChunksGateway(dataSource);
+        try (var dataSource = (HikariDataSource) DataSourceFactory.create(databaseUrl)) {
+            var gateway = new ChunksGateway(dataSource);
 
-        System.out.println("Loading chunks from " + chunksTsv.toAbsolutePath());
-        List<DocChunk> chunks = new DocsLoader().loadChunks(chunksTsv);
-        System.out.println("Parsed " + chunks.size() + " chunks; inserting...");
+            System.out.println("Loading chunks from " + chunksTsv.toAbsolutePath());
+            List<DocChunk> chunks = new DocsLoader().loadChunks(chunksTsv);
+            System.out.println("Parsed " + chunks.size() + " chunks; reconciling...");
 
-        int batchSize = 500;
-        int inserted = 0;
-        for (int i = 0; i < chunks.size(); i += batchSize) {
-            List<DocChunk> batch = chunks.subList(i, Math.min(i + batchSize, chunks.size()));
-            gateway.insertBatch(batch);
-            inserted += batch.size();
-            System.out.printf("  inserted %d / %d%n", inserted, chunks.size());
+            ChunksGateway.Reconciliation result = gateway.replaceAll(chunks);
+            System.out.printf("Reconciled %d chunks: %d inserted or changed, %d deleted%n",
+                    result.incoming(), result.insertedOrChanged(), result.deleted());
+            System.out.println("Done. chunks in table: " + gateway.count());
         }
-
-        System.out.println("Done. chunks in table: " + gateway.count());
     }
 }

@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Loads relevance judgments from the WANDS label.csv (tab-separated:
- * id, query_id, chunk_id, label). Binarizes graded labels: by default
+ * Loads relevance judgments from the PostgreSQL documentation qrels TSV
+ * (id, query_id, chunk_id, label). Binarizes graded labels: by default
  * Exact + Partial count as relevant; strict mode counts Exact only.
  */
 public class QrelsLoader {
@@ -23,8 +23,8 @@ public class QrelsLoader {
         EXACT_AND_PARTIAL
     }
 
-    public Qrels load(Path labelCsv, Set<Long> queryIds, Mode mode) {
-        try (BufferedReader reader = Files.newBufferedReader(labelCsv, StandardCharsets.UTF_8)) {
+    public Qrels load(Path qrelsTsv, Set<Long> queryIds, Mode mode) {
+        try (BufferedReader reader = Files.newBufferedReader(qrelsTsv, StandardCharsets.UTF_8)) {
             Map<Long, Set<Long>> relevant = new HashMap<>();
             reader.readLine(); // header
             String line;

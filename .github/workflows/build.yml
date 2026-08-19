@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: paradedb/paradedb:pg18
+        image: paradedb/paradedb:0.25.3-pg18@sha256:82d0c8bb0263c4320cb321591dd6831ecdd04b4b27328ef658358a9a8c383ac5
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

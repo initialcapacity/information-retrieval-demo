@@ -19,6 +19,12 @@ dependencies {
 }
 
 tasks {
+    processResources {
+        from(rootProject.file("data/pgdocs/qrels.tsv")) {
+            rename { "fixture-qrels.tsv" }
+        }
+    }
+
     shadowJar {
         manifest {
             attributes("Main-Class" to "Main")
