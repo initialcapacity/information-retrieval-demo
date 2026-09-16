@@ -30,5 +30,7 @@ jobs:
         run: psql --host localhost --port 5433 --username postgres --dbname postgres < databases/create_databases.sql
       - name: "Migrate"
         run: ./gradlew :databases:catalog:migrate
+      - name: "Test chunker"
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: "Build"
         run: ./gradlew build

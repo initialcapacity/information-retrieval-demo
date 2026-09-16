@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/components.css">
@@ -39,10 +40,10 @@
         }
         .topbar nav a:hover { color: var(--text); background: var(--surface-sunken); }
         .topbar nav a.active { color: var(--signal); border-color: var(--border); background: var(--signal-bg); }
-        .compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); align-items: start; }
-        @media (max-width: 1000px) { .compare { grid-template-columns: 1fr; } }
-        .compare .card { padding: var(--space-6); }
-        .compare .subsection-title { font-size: var(--fs-md); }
+        .compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); align-items: start; }
+        @media (max-width: 1000px) { .compare { grid-template-columns: minmax(0, 1fr); } }
+        .compare .card { padding: var(--space-6); min-width: 0; }
+        .compare .subsection-title { font-size: var(--fs-md); flex-wrap: wrap; }
         .result-list { display: flex; flex-direction: column; }
         .result-row {
             display: flex; gap: var(--space-4); padding: var(--space-4) var(--space-2);
@@ -56,7 +57,7 @@
         .hero-links { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-5); align-items: center; margin-bottom: var(--space-4); }
         .hero-links .lbl { font-family: var(--font-mono); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-muted); }
         .search-form { display: flex; gap: var(--space-4); flex-wrap: wrap; }
-        .search-form input[type=search] { flex: 1; min-width: 320px; }
+        .search-form input[type=search] { flex: 1; min-width: min(320px, 100%); }
         .eval-note { font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--text); max-width: 74ch; margin-bottom: var(--space-4); }
         .eval-caption { font-size: var(--fs-md); line-height: var(--lh-snug); color: var(--text-muted); max-width: 74ch; margin-bottom: var(--space-4); }
         /* Eval emphasis: fill the winning row/cell rather than just drawing a left bar. */
@@ -64,6 +65,11 @@
         .table .row-header td:first-child { border-left: 3px solid var(--signal); }
         .table td.win { background: color-mix(in srgb, var(--signal) 16%, var(--surface)); font-weight: 700; color: var(--text); }
         .hero-sep { width: 1px; align-self: stretch; background: var(--border); margin: 0 var(--space-2); }
+
+        .hero-links > .button { max-width: 100%; height: auto; min-height: var(--control-h);
+            white-space: normal; overflow-wrap: anywhere; text-align: left; padding-block: var(--space-2); }
+        .table-scroll { overflow-x: auto; }
+        .table-scroll .table th, .table-scroll .table td { white-space: nowrap; }
 
         /* ---------- Grouped labelled-query picker ---------- */
         .qpicker { position: relative; }
@@ -124,6 +130,28 @@
         .qpanel-foot .k.keyword::before { background: var(--signal); }
         .qpanel-foot .k.semantic::before { background: var(--accent); }
         .qpanel-foot .k.mixed::before { background: var(--navy-700); }
+        @media (max-width: 600px) {
+            .topbar { flex-wrap: wrap; padding: var(--space-4); gap: var(--space-3); }
+            main > section { padding: var(--space-6) var(--space-4); }
+            main > section > header > h2 { font-size: 2.25rem; }
+            main > section > header > .lede { font-size: var(--fs-lg); }
+            .hero-sep { display: none; }
+            .qpicker, .qpicker-trigger { width: 100%; }
+            .compare .card { padding: var(--space-4); }
+            .result-row { gap: var(--space-2); }
+            .result-row .name, .result-row .cat { overflow-wrap: anywhere; }
+            .eval-note { overflow-wrap: anywhere; }
+            .qpanel { position: fixed; inset: 10dvh var(--space-4) auto; width: auto;
+                max-width: none; max-height: 80dvh; }
+            .qpicker.open .qpanel { display: flex; flex-direction: column; }
+            .qpanel-head, .qpanel-foot { flex-shrink: 0; }
+            .qpanel-head .title { flex-wrap: wrap; }
+            .qscroll { min-height: 0; max-height: none; }
+            .qgroup-head { flex-wrap: wrap; }
+            .qgroup-head .desc { width: 100%; order: 1; }
+            .qitem .q { white-space: normal; }
+            .qitem .qcat { display: none; }
+        }
     </style>
 </head>
 <body>

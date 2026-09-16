@@ -7,6 +7,7 @@ import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.databasesupport.DataSourceFactory;
 import io.ic.starter.databasesupport.HealthGateway;
 import io.ic.starter.search.Bm25Gateway;
+import io.ic.starter.search.RetrievalConfig;
 import io.ic.starter.search.EmbeddingClient;
 import io.ic.starter.search.EmbeddingGateway;
 import io.ic.starter.search.HybridSearchService;
@@ -46,7 +47,7 @@ public class StarterSetup implements AppSetup {
     @Override
     public void configureEndpoints(RoutesConfig routes) {
         // ef_search parity with the eval: the pgvector default (40) under-retrieves.
-        dataSource = DataSourceFactory.create(env.databaseUrl(), 10, "set hnsw.ef_search = 400");
+        dataSource = DataSourceFactory.create(env.databaseUrl(), 10, RetrievalConfig.CONNECTION_INIT_SQL);
 
         var bm25Gateway = new Bm25Gateway(dataSource);
         var embeddingGateway = new EmbeddingGateway(dataSource);

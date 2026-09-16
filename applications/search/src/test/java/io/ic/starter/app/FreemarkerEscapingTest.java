@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FreemarkerEscapingTest {
     @Test
@@ -23,4 +24,15 @@ class FreemarkerEscapingTest {
 
         assertFalse(output.toString().contains(payload));
     }
+    @Test
+    void rendersCommittedEvalSnapshotAndItsProvenance() throws Exception {
+        var report = new EvalReportLoader().load();
+        var output = new StringWriter();
+        StarterSetup.freemarkerConfiguration().getTemplate("eval.ftl")
+                .process(Map.of("report", report, "active", "eval"), output);
+        assertTrue(output.toString().contains("Exact only"));
+        assertTrue(output.toString().contains("Exact + Partial"));
+        assertTrue(output.toString().contains("does not rerun retrieval"));
+    }
+
 }

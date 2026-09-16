@@ -9,22 +9,24 @@ The documents: 1,779 section-level chunks parsed from the official `postgresql-1
 ## Prerequisites
 
 - Docker (running)
+- Python 3 (chunk regeneration and chunker tests)
 - JDK 26 (the Gradle wrapper is 9.6.1, which supports running on JDK 26)
 - `OPENAI_API_KEY` set in `.env` (used to backfill chunk embeddings and to embed ad-hoc queries; the core demo serves from a committed cache)
 
 ## One-time setup
 
 ```bash
-docker compose up -d                                 # ParadeDB (pg_search + pgvector) on host :5433
+cp .env.example .env                               # set your OPENAI_API_KEY in .env
+docker compose up -d --wait                        # ParadeDB (pg_search + pgvector) on host :5433
 set -a && . ./.env && set +a                         # load DATABASE_URL + OPENAI_API_KEY
 
-./scripts/verify.sh                                  # create db, migrate, build + test (offline)
+./scripts/verify.sh                                # create db, migrate, build + test (no OpenAI calls)
 
 ./gradlew :applications:tools:ingestDocs             # load the 1,779 doc chunks (seconds)
 ./gradlew :applications:tools:backfillEmbeddings     # embed chunks + build HNSW (~2 min, one OpenAI pass)
 ```
 
-Fixture query embeddings ship in one canonical committed cache (`applications/search/src/main/resources/fixture-query-embeddings.tsv`), so search over fixture queries and the eval run offline. Its metadata records the model, dimensions, and fixture fingerprint; `cacheQueryEmbeddings` regenerates the cache and metadata if the fixture changes. Qrels remain canonical at `data/pgdocs/qrels.tsv` and are packaged into the web app by `processResources`.
+Fixture query embeddings ship in one canonical committed cache (`applications/search/src/main/resources/fixture-query-embeddings.tsv`), so search over fixture queries and the eval run without OpenAI calls after the document backfill. The cache metadata records the model, dimensions, and fixture fingerprint; `cacheQueryEmbeddings` regenerates the cache and metadata if the fixture changes. The first build downloads Gradle and Maven dependencies. Qrels remain canonical at `data/pgdocs/qrels.tsv` and are packaged into the web app by `processResources`.
 
 ## Run
 
@@ -39,7 +41,7 @@ Fixture query embeddings ship in one canonical committed cache (`applications/se
 1. **The embeddings query.** On the Search view, click `my database keeps growing even though I delete rows`. BM25 returns PL/Perl and SSL configuration sections; embeddings return deleting-data and vacuuming sections. The query shares no vocabulary with the answer (the manual says "dead tuples" and "reclaiming storage"), so keyword search has nothing to match.
 2. **The BM25 query.** Click `wal_level logical`. BM25 ranks all six relevant sections in its top 10; embeddings return nothing relevant. Exact config tokens need exact matching. The hybrid keeps the top result but only two of the six.
 3. **The hybrid query.** Click `writes are slow when many clients commit at once`. BM25 finds 4 of 9 relevant sections, embeddings find a different 4 (only 2 shared), and the hybrid column shows 7 of 9 with the top four rows all relevant, including sections neither method ranked in its top 10.
-4. **The numbers.** Open the Eval view. The eval scores all three methods with the same measure: BM25 0.349, embeddings 0.366, hybrid 0.403 F1 (Exact-only, k=10). The per-bucket table shows keyword queries scoring best with BM25 and semantic queries with embeddings, with the hybrid highest overall.
+4. **The numbers.** Open the Eval view. The eval scores all three methods with the same measure: BM25 0.349, embeddings 0.368, hybrid 0.401 F1 (Exact-only, k=10). The per-bucket table shows keyword queries scoring best with BM25 and semantic queries with embeddings, with the hybrid highest overall.
 
 ## Latency
 
@@ -56,16 +58,39 @@ Each column header carries the server-side wall clock for that method's query, a
 
 One measurement per request, so the first query after startup carries JIT and pool warmup; run it twice for a warm number. The request total exceeds the sum of the three methods because it also loads section titles for the rows on screen. The live embedding round trip dominates everything else, which is why the hero queries serve from the committed cache.
 
-## Regenerate the eval snapshot
+## Rehearse and regenerate the eval snapshot
 
 ```bash
-./gradlew :applications:tools:runEval    # reruns the eval and rewrites the committed eval-results.json
+./gradlew :applications:tools:smoke      # offline top-10 results for all three hero queries and methods
+./gradlew :applications:tools:runEval    # validates and atomically replaces eval-results.json
 ```
+
+The smoke check uses the same hero queries and retrieval settings as the app, prints Exact counts, and exits unsuccessfully if the scripted comparisons no longer hold. Neither command needs `OPENAI_API_KEY` once the corpus is embedded.
+
+The eval captures each method's candidates once per query, then uses those rankings for both relevance modes, every bucket, and the JSON snapshot. Console tables explicitly label Exact-only versus Exact + Partial. The command fails without replacing the snapshot if the database corpus differs from `chunks.tsv`, document embeddings are incomplete, or Exact-only hybrid F1 does not beat both baselines. Export errors also fail the command.
+
+Each snapshot records its timestamp, candidate depth, configured embedding model and dimensions, Postgres/extension versions, index definitions, and SHA-256 fingerprints for the corpus, indexed text, document vectors, query fixture/cache, qrels, and retrieved rankings. `/eval` displays this saved snapshot; it does not rerun retrieval. Restart the app after regenerating it.
+
+To write a comparison run elsewhere:
+
+```bash
+./gradlew :applications:tools:runEval --args="data/pgdocs/qrels.tsv applications/search/src/main/resources/fixture-query-embeddings.tsv /tmp/ir-eval.json"
+```
+
+Use the fingerprints to distinguish changed inputs from changed rankings. Re-embedding documents or rebuilding an [approximate index](https://github.com/pgvector/pgvector#indexing) can change scores; the committed query cache alone does not fix the document vectors. Keep the prepared database volume for a repeatable live demo. Historical snapshots without fingerprints cannot establish the cause of a score difference.
 
 ## Offline note
 
 All three hero queries are fixture queries, so they serve from the committed embedding cache: the scripted demo is network-independent. Any *other* ad-hoc query typed live does a live OpenAI embed and needs `OPENAI_API_KEY` (without it, the UI degrades to a BM25-only column with a warning).
 
 ## Regenerating the chunks
+
+After extracting the official PostgreSQL docs tarball, run:
+
+```bash
+python3 scripts/chunk_docs.py --docs postgresql-18.1/doc/src/sgml/html --output /tmp/chunks.tsv
+```
+
+The output includes the header expected by `ingestDocs`. Missing or empty input fails before replacing the output. Review regenerated chunks before replacing the committed corpus; the importer rejects missing headers, malformed rows, and duplicate IDs.
 
 `data/pgdocs/chunks.tsv` was produced from the official docs tarball by the chunker in `scripts/chunk_docs.py` (one chunk per page, split at h2/h3 past ~900 words, release notes excluded). Re-running it against a newer docs release changes chunk ids, which invalidates the committed qrels; re-label before swapping corpora.

@@ -11,7 +11,7 @@
         </p>
 
         <form class="search-form" action="/" method="get">
-            <input type="search" name="q" placeholder="Search the PostgreSQL manual..." value="${view.query()}" autofocus>
+            <input type="search" name="q" aria-label="Search the PostgreSQL manual" placeholder="Search the PostgreSQL manual..." value="${view.query()}" autofocus>
             <button type="submit" class="accent">Search</button>
         </form>
         <div class="hero-links">
@@ -149,6 +149,7 @@
 
         function setOpen(open) {
             picker.classList.toggle('open', open);
+            if (!open && picker.contains(document.activeElement)) trigger.focus();
             trigger.setAttribute('aria-expanded', String(open));
             if (open && filter) {
                 setTimeout(function () { filter.focus(); }, 0);

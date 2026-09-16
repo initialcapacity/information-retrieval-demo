@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.ic.starter.eval.DemoQueries.HERO_QUERIES;
+import static io.ic.starter.search.RetrievalConfig.*;
+
 /**
  * Builds the three-column comparison for a query: BM25, dense, hybrid. Runs each
  * method live against Postgres, times each one, and annotates results with fixture
@@ -26,14 +29,6 @@ import java.util.stream.Collectors;
  */
 public class SearchService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchService.class);
-    private static final int DISPLAY_K = 10;     // results shown per column on stage, aligned with the eval k
-    private static final int CANDIDATE_DEPTH = 100;
-
-    private static final List<String> HERO_QUERIES = List.of(
-            "my database keeps growing even though I delete rows",
-            "wal_level logical",
-            "writes are slow when many clients commit at once");
-
     private final Bm25Gateway bm25Gateway;
     private final EmbeddingGateway embeddingGateway;
     private final HybridSearchService hybridService;
@@ -73,7 +68,7 @@ public class SearchService {
         long start = System.nanoTime();
         Long queryId = fixtureIndex.queryId(query).orElse(null);
 
-        Timed<List<SearchResult>> bm25 = Timed.of(() -> bm25Gateway.search(query, DISPLAY_K));
+        Timed<List<SearchResult>> bm25 = Timed.of(() -> bm25Gateway.search(query, K));
 
         Timed<QueryEmbeddingResolver.Resolved> resolved;
         try {
@@ -92,14 +87,14 @@ public class SearchService {
         }
 
         float[] vector = resolved.value().vector();
-        Timed<List<SearchResult>> dense = Timed.of(() -> embeddingGateway.search(vector, DISPLAY_K));
+        Timed<List<SearchResult>> dense = Timed.of(() -> embeddingGateway.search(vector, K));
         Timed<List<SearchResult>> hybrid = Timed.of(() -> hybridService
-                .hybrid(query, vector, CANDIDATE_DEPTH).stream().limit(DISPLAY_K).toList());
+                .hybrid(query, vector, CANDIDATE_DEPTH).stream().limit(K).toList());
 
         var columns = List.of(
                 column("BM25", "lexical", bm25, queryId),
                 column("Embeddings", "semantic", dense, queryId),
-                column("Hybrid", "RRF k=60", hybrid, queryId)
+                column("Hybrid", "RRF k=" + RRF_K, hybrid, queryId)
         );
         return new SearchView(query, true, queryId != null, resolved.value().source(), null, null, columns,
                 timing(resolved.millis(), start), HERO_QUERIES, pickerTotal, pickerGroups);
@@ -112,7 +107,7 @@ public class SearchService {
      */
     private static SearchView.Timing timing(Double embeddingMillis, long startNanos) {
         double total = (System.nanoTime() - startNanos) / 1_000_000.0;
-        return new SearchView.Timing(embeddingMillis, total, DISPLAY_K, CANDIDATE_DEPTH);
+        return new SearchView.Timing(embeddingMillis, total, K, CANDIDATE_DEPTH);
     }
 
     /**

@@ -18,7 +18,7 @@ import java.util.List;
  * and retries on rate-limit / transient errors with exponential backoff.
  */
 public class OpenAiEmbeddingClient implements EmbeddingClient {
-    private static final String DEFAULT_MODEL = "text-embedding-3-small";
+    private static final String DEFAULT_MODEL = RetrievalConfig.EMBEDDING_MODEL;
     private static final int DEFAULT_MAX_ATTEMPTS = 6;
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(20);
     private static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(120);

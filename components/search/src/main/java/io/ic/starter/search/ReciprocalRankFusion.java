@@ -10,7 +10,7 @@ import java.util.Map;
  * normalization). Default k = 60.
  */
 public class ReciprocalRankFusion {
-    public static final int DEFAULT_K = 60;
+    public static final int DEFAULT_K = RetrievalConfig.RRF_K;
 
     private final int k;
 

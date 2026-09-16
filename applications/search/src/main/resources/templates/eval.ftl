@@ -4,25 +4,34 @@
 <section>
     <header>
         <p class="eyebrow"><span class="eyebrow-inner">precision / recall / f-score</span></p>
-        <h2>The hybrid scores <em>highest</em> overall</h2>
+        <h2>Compare <em>retrieval quality</em></h2>
         <p class="lede">
-            Macro-averaged over 56 fixture queries against the PostgreSQL manual at k=${report.k()},
-            RRF k=${report.rrfK()}, hnsw.ef_search=${report.efSearch()}.
-            Real numbers from the committed eval run.
+            Macro-averaged over ${report.modes()[0].overall()[0].queryCount()} fixture queries against the PostgreSQL manual at k=${report.k()},
+            RRF k=${report.rrfK()}, candidate depth=${report.candidateDepth()}, hnsw.ef_search=${report.efSearch()}.
+            Results from the committed eval snapshot; this page does not rerun retrieval.
         </p>
     </header>
+
+    <#if report.provenance()??>
+        <p class="eval-note">
+            Snapshot: ${report.provenance().generatedAt()} &middot;
+            ${report.provenance().chunkCount()?c} chunks &middot;
+            ${report.provenance().embeddingModel()} (${report.provenance().embeddingDimensions()?c} dimensions).
+            Input and ranking fingerprints are recorded in eval-results.json for comparing runs.
+        </p>
+    </#if>
 
     <#list report.modes() as mode>
         <div class="subsection">
             <div class="subsection-title">${mode.name()} <small>relevance binarization</small></div>
             <#if mode.name()?contains("Partial")>
-                <p class="eval-note">Sections merely related to the query also count as relevant. The relevant set is larger, recall at k=${report.k()} has a lower ceiling, and the three methods score closer together.</p>
+                <p class="eval-note">Sections merely related to the query also count as relevant. The relevant set is larger, recall at k=${report.k()} has a lower ceiling, and the winning method can change.</p>
             <#else>
-                <p class="eval-note">Only sections judged to answer the query count as relevant. It is the strict bar, and where the pattern is clearest: F1 rises from BM25 to embeddings to hybrid.</p>
+                <p class="eval-note">Only sections judged to answer the query count as relevant. This is the headline relevance definition used by the demo.</p>
             </#if>
 
             <p class="eval-caption">Overall quality per method: precision, recall, and F1 at k=${report.k()}, macro-averaged across every fixture query. F1 is the mean of each query's F1, not the harmonic mean of the two displayed averages. The hybrid row is highlighted.</p>
-            <div class="card" style="margin-bottom: var(--space-6);">
+            <div class="card table-scroll" style="margin-bottom: var(--space-6);" tabindex="0" role="region" aria-label="${mode.name()} overall metrics">
                 <table class="table">
                     <thead>
                         <tr><th>method</th><th class="num">precision@${report.k()}</th><th class="num">recall@${report.k()}</th><th class="num">f1@${report.k()}</th></tr>
@@ -41,7 +50,7 @@
             </div>
 
             <p class="eval-caption">The same scores split by query type: exact-token queries, paraphrased queries, and queries with some of each. The balance between methods shifts across the rows; the highest F1 in each row is highlighted.</p>
-            <div class="card">
+            <div class="card table-scroll" tabindex="0" role="region" aria-label="${mode.name()} metrics by query type">
                 <table class="table">
                     <thead>
                         <tr>

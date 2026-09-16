@@ -2,169 +2,127 @@ package io.ic.starter.tools;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ic.starter.databasesupport.DataSourceFactory;
-import io.ic.starter.eval.EvalReport;
-import io.ic.starter.eval.EvalRunner;
-import io.ic.starter.eval.FixtureLoader;
-import io.ic.starter.eval.FixtureQuery;
-import io.ic.starter.eval.Metrics;
-import io.ic.starter.eval.MethodMetrics;
-import io.ic.starter.eval.Qrels;
-import io.ic.starter.eval.QrelsLoader;
-import io.ic.starter.eval.RankingFunction;
-import io.ic.starter.eval.ResultsTable;
+import io.ic.starter.eval.*;
 import io.ic.starter.search.Bm25Gateway;
 import io.ic.starter.search.EmbeddingGateway;
-import io.ic.starter.search.HybridSearchService;
-import io.ic.starter.search.ReciprocalRankFusion;
 
-import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Runs the full eval: BM25, embeddings, and hybrid over the fixture, macro-averaged
- * P/R/F1 at k, with per-lean breakdowns and a validation gate.
- */
+import static io.ic.starter.search.RetrievalConfig.*;
+
+/** Offline evaluation. Both console and JSON render the same captured rankings and report. */
 public class EvalMain {
-    private static final int K = 10;
-    private static final int CANDIDATE_DEPTH = 100;
-
     public static void main(String[] args) {
-        String databaseUrl = System.getenv("DATABASE_URL");
-        Path labelCsv = Path.of(args.length > 0 ? args[0] : "data/pgdocs/qrels.tsv");
-        Path cacheFile = Path.of(args.length > 1
-                ? args[1]
+        Path qrelsFile = Path.of(args.length > 0 ? args[0] : "data/pgdocs/qrels.tsv");
+        Path cacheFile = Path.of(args.length > 1 ? args[1]
                 : "applications/search/src/main/resources/fixture-query-embeddings.tsv");
+        Path output = Path.of(args.length > 2 ? args[2]
+                : "applications/search/src/main/resources/eval-results.json");
+        Path corpus = Path.of(args.length > 3 ? args[3] : "data/pgdocs/chunks.tsv");
 
-        // Raise HNSW ef_search well above the candidate depth: the pgvector default
-        // (40) under-retrieves and was artificially depressing dense/hybrid.
-        DataSource dataSource = DataSourceFactory.create(databaseUrl, 10, "set hnsw.ef_search = 400");
-        var bm25Gateway = new Bm25Gateway(dataSource);
-        var embeddingGateway = new EmbeddingGateway(dataSource);
-        var hybrid = new HybridSearchService(bm25Gateway, embeddingGateway);
+        try (var source = DataSourceFactory.create(System.getenv("DATABASE_URL"), 10, CONNECTION_INIT_SQL)) {
+            List<FixtureQuery> queries = new FixtureLoader().load();
+            Set<Long> ids = queries.stream().map(FixtureQuery::queryId).collect(Collectors.toSet());
+            var exact = new QrelsLoader().load(qrelsFile, ids, QrelsLoader.Mode.EXACT_ONLY);
+            var partial = new QrelsLoader().load(qrelsFile, ids, QrelsLoader.Mode.EXACT_AND_PARTIAL);
+            var cache = new QueryEmbeddingCache(cacheFile, queries);
+            var provenance = EvalProvenance.capture(source, corpus, qrelsFile, cacheFile);
+            var rankings = new FixtureRankings(queries, cache, new Bm25Gateway(source), new EmbeddingGateway(source));
+            var report = buildReport(queries, exact, partial, rankings, provenance);
+            printReport(report);
+            printSemanticValidation(queries, exact, rankings);
 
-        List<FixtureQuery> queries = new FixtureLoader().load();
-        Set<Long> queryIds = queries.stream().map(FixtureQuery::queryId).collect(Collectors.toSet());
-
-        var qrels = new QrelsLoader().load(labelCsv, queryIds, QrelsLoader.Mode.EXACT_AND_PARTIAL);
-        var qrelsExact = new QrelsLoader().load(labelCsv, queryIds, QrelsLoader.Mode.EXACT_ONLY);
-        var cache = new QueryEmbeddingCache(cacheFile, queries);
-
-        RankingFunction bm25 = q -> ReciprocalRankFusion.toIds(bm25Gateway.search(q.query(), CANDIDATE_DEPTH));
-        RankingFunction dense = q -> ReciprocalRankFusion.toIds(embeddingGateway.search(cache.get(q.queryId()), CANDIDATE_DEPTH));
-        RankingFunction hybridRank = q -> ReciprocalRankFusion.toIds(hybrid.hybrid(q.query(), cache.get(q.queryId()), CANDIDATE_DEPTH));
-
-        var runner = new EvalRunner();
-
-        System.out.println("=".repeat(60));
-        System.out.println("Information retrieval eval  | pgdocs |  " + queries.size() + " fixture queries");
-        System.out.println("relevance: Exact + Partial (default)");
-        System.out.println("=".repeat(60));
-
-        // Headline / gate config: Exact-only, k=10 (the agreed demo binarization).
-        List<MethodMetrics> overall = List.of(
-                runner.evaluate("bm25", queries, qrelsExact, bm25, K),
-                runner.evaluate("embeddings", queries, qrelsExact, dense, K),
-                runner.evaluate("hybrid", queries, qrelsExact, hybridRank, K)
-        );
-        System.out.println(ResultsTable.format("OVERALL (Exact only) [headline config]", K, overall));
-
-        // Default Exact+Partial mode (shown for completeness; hybrid ~ dense here at k=10).
-        System.out.println(ResultsTable.format("OVERALL (Exact+Partial)", K, List.of(
-                runner.evaluate("bm25", queries, qrels, bm25, K),
-                runner.evaluate("embeddings", queries, qrels, dense, K),
-                runner.evaluate("hybrid", queries, qrels, hybridRank, K)
-        )));
-
-        // Per-lean breakdowns.
-        Map<String, List<FixtureQuery>> byLean = queries.stream()
-                .collect(Collectors.groupingBy(FixtureQuery::lean));
-        for (String lean : List.of("semantic", "keyword", "mixed")) {
-            List<FixtureQuery> bucket = byLean.getOrDefault(lean, List.of());
-            System.out.println(ResultsTable.format("LEAN=" + lean, K, List.of(
-                    runner.evaluate("bm25", bucket, qrels, bm25, K),
-                    runner.evaluate("embeddings", bucket, qrels, dense, K),
-                    runner.evaluate("hybrid", bucket, qrels, hybridRank, K)
-            )));
-        }
-
-        // Validation gate.
-        double bm25F1 = overall.get(0).f1();
-        double denseF1 = overall.get(1).f1();
-        double hybridF1 = overall.get(2).f1();
-        System.out.println("-".repeat(60));
-        boolean climbs = hybridF1 > bm25F1 && hybridF1 > denseF1;
-        System.out.printf("VALIDATION GATE: hybrid F1=%.4f  bm25 F1=%.4f  embeddings F1=%.4f%n", hybridF1, bm25F1, denseF1);
-        System.out.println(climbs
-                ? "PASS: hybrid F1 exceeds both single-method baselines."
-                : "FAIL: hybrid does not beat both baselines (see diagnosis above).");
-
-        // Semantic-bucket validation: does dense actually recover BM25's failures?
-        System.out.println("-".repeat(60));
-        System.out.println("SEMANTIC-BUCKET VALIDATION (per-query recall@" + K + ")");
-        List<FixtureQuery> semantic = byLean.getOrDefault("semantic", List.of());
-        int denseWins = 0;
-        int hardForBoth = 0;
-        var hardQueries = new java.util.ArrayList<String>();
-        for (FixtureQuery q : semantic) {
-            Set<Long> relevant = qrels.relevantFor(q.queryId());
-            if (relevant.isEmpty()) {
-                continue;
-            }
-            double bm25Recall = Metrics.recallAtK(bm25.rank(q), relevant, K);
-            double denseRecall = Metrics.recallAtK(dense.rank(q), relevant, K);
-            if (denseRecall > bm25Recall) {
-                denseWins++;
-            }
-            if (bm25Recall == 0.0 && denseRecall == 0.0) {
-                hardForBoth++;
-                hardQueries.add(q.queryId() + " \"" + q.query() + "\"");
-            }
-        }
-        System.out.printf("semantic queries: %d | embeddings recall > bm25 recall on %d | hard for both (recall 0): %d%n",
-                semantic.size(), denseWins, hardForBoth);
-        if (!hardQueries.isEmpty()) {
-            System.out.println("  hard-for-both queries:");
-            hardQueries.forEach(h -> System.out.println("    - " + h));
-        }
-
-        // Export a real-results snapshot for the web app's eval view (offline render).
-        var report = new EvalReport(K, ReciprocalRankFusion.DEFAULT_K, 400, List.of(
-                buildMode("Exact only", queries, byLean, qrelsExact, bm25, dense, hybridRank, runner),
-                buildMode("Exact + Partial", queries, byLean, qrels, bm25, dense, hybridRank, runner)
-        ));
-        Path jsonOut = Path.of("applications/search/src/main/resources/eval-results.json");
-        try {
-            Files.createDirectories(jsonOut.getParent());
-            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(jsonOut.toFile(), report);
-            System.out.println("\nWrote eval snapshot -> " + jsonOut.toAbsolutePath());
-        } catch (Exception e) {
-            System.out.println("Failed to write eval snapshot: " + e.getMessage());
+            // Enforce the scripted demo's claim. An experiment where hybrid loses is
+            // useful, but must not silently replace the presentation's snapshot.
+            requireHybridWin(report.modes().getFirst().overall());
+            writeReport(output, report);
+            System.out.println("Wrote eval snapshot -> " + output.toAbsolutePath());
         }
     }
 
-    private static EvalReport.ModeReport buildMode(
-            String name, List<FixtureQuery> queries, Map<String, List<FixtureQuery>> byLean,
-            Qrels qrels, RankingFunction bm25, RankingFunction dense, RankingFunction hybrid, EvalRunner runner) {
-        List<MethodMetrics> overall = List.of(
-                runner.evaluate("bm25", queries, qrels, bm25, K),
-                runner.evaluate("embeddings", queries, qrels, dense, K),
-                runner.evaluate("hybrid", queries, qrels, hybrid, K)
-        );
+    static EvalReport buildReport(List<FixtureQuery> queries, Qrels exact, Qrels partial,
+                                  FixtureRankings rankings, EvalReport.Provenance provenance) {
+        var byLean = queries.stream().collect(Collectors.groupingBy(FixtureQuery::lean));
+        return new EvalReport(K, RRF_K, EF_SEARCH, CANDIDATE_DEPTH, provenance, rankings.fingerprint(), List.of(
+                buildMode("Exact only", queries, byLean, exact, rankings),
+                buildMode("Exact + Partial", queries, byLean, partial, rankings)));
+    }
+
+    static void printReport(EvalReport report) {
+        System.out.println("Information retrieval eval | pgdocs | headline relevance: Exact only");
+        for (var mode : report.modes()) {
+            System.out.println(ResultsTable.format("OVERALL (" + mode.name() + ")", report.k(), mode.overall()));
+            for (var bucket : mode.buckets()) {
+                System.out.println(ResultsTable.format("LEAN=" + bucket.lean() + " (" + mode.name() + ")",
+                        report.k(), bucket.metrics()));
+            }
+        }
+    }
+
+    static void requireHybridWin(List<MethodMetrics> metrics) {
+        Map<String, Double> f1 = metrics.stream().collect(Collectors.toMap(MethodMetrics::method, MethodMetrics::f1));
+        if (!(f1.get("hybrid") > f1.get("bm25") && f1.get("hybrid") > f1.get("embeddings"))) {
+            throw new IllegalStateException("Validation failed: Exact-only hybrid F1 must exceed both baselines; snapshot unchanged");
+        }
+        System.out.println("PASS: Exact-only hybrid F1 exceeds both single-method baselines.");
+    }
+
+    static void writeReport(Path output, EvalReport report) {
+        Path temporary = null;
+        try {
+            Path target = output.toAbsolutePath();
+            Files.createDirectories(target.getParent());
+            temporary = Files.createTempFile(target.getParent(), ".eval-", ".json");
+            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(temporary.toFile(), report);
+            Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write eval snapshot: " + output, e);
+        } finally {
+            if (temporary != null) {
+                try { Files.deleteIfExists(temporary); }
+                catch (IOException e) { throw new UncheckedIOException(e); }
+            }
+        }
+    }
+
+    private static EvalReport.ModeReport buildMode(String name, List<FixtureQuery> queries,
+            Map<String, List<FixtureQuery>> byLean, Qrels qrels, FixtureRankings rankings) {
         var buckets = new ArrayList<EvalReport.BucketReport>();
         for (String lean : List.of("keyword", "semantic", "mixed")) {
-            List<FixtureQuery> bucket = byLean.getOrDefault(lean, List.of());
-            buckets.add(new EvalReport.BucketReport(lean, bucket.size(), List.of(
-                    runner.evaluate("bm25", bucket, qrels, bm25, K),
-                    runner.evaluate("embeddings", bucket, qrels, dense, K),
-                    runner.evaluate("hybrid", bucket, qrels, hybrid, K)
-            )));
+            var bucket = byLean.getOrDefault(lean, List.of());
+            buckets.add(new EvalReport.BucketReport(lean, bucket.size(), evaluate(bucket, qrels, rankings)));
         }
-        return new EvalReport.ModeReport(name, overall, buckets);
+        return new EvalReport.ModeReport(name, evaluate(queries, qrels, rankings), buckets);
+    }
+
+    private static List<MethodMetrics> evaluate(List<FixtureQuery> queries, Qrels qrels, FixtureRankings rankings) {
+        var runner = new EvalRunner();
+        return List.of("bm25", "embeddings", "hybrid").stream()
+                .map(name -> runner.evaluate(name, queries, qrels, rankings.method(name), K)).toList();
+    }
+
+    private static void printSemanticValidation(List<FixtureQuery> queries, Qrels exact, FixtureRankings rankings) {
+        int denseWins = 0;
+        var hard = new ArrayList<String>();
+        for (var query : queries.stream().filter(q -> q.lean().equals("semantic")).toList()) {
+            var relevant = exact.relevantFor(query.queryId());
+            if (relevant.isEmpty()) continue;
+            double bm25 = Metrics.recallAtK(rankings.method("bm25").rank(query), relevant, K);
+            double dense = Metrics.recallAtK(rankings.method("embeddings").rank(query), relevant, K);
+            if (dense > bm25) denseWins++;
+            if (bm25 == 0 && dense == 0) hard.add(query.query());
+        }
+        System.out.printf("SEMANTIC (Exact only): embeddings improve recall@%d on %d queries; %d have zero recall for both%n",
+                K, denseWins, hard.size());
+        hard.forEach(query -> System.out.println("  " + query));
     }
 }

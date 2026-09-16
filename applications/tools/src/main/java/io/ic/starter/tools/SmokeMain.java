@@ -2,65 +2,69 @@ package io.ic.starter.tools;
 
 import io.ic.starter.catalog.ChunksGateway;
 import io.ic.starter.databasesupport.DataSourceFactory;
+import io.ic.starter.eval.DemoQueries;
+import io.ic.starter.eval.FixtureLoader;
+import io.ic.starter.eval.FixtureQuery;
+import io.ic.starter.eval.QrelsLoader;
 import io.ic.starter.search.Bm25Gateway;
 import io.ic.starter.search.EmbeddingGateway;
-import io.ic.starter.search.OpenAiEmbeddingClient;
-import io.ic.starter.search.SearchResult;
 
-import javax.sql.DataSource;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Hero-query smoke test: prints BM25 vs embedding top results side by side so the
- * opposite failure modes are visible without the metrics. Always embeds each
- * query live via OpenAI (requires OPENAI_API_KEY); it does not read the
- * query-embedding cache. Without a key, the embeddings column is skipped.
- */
+import static io.ic.starter.search.RetrievalConfig.*;
+
+/** Offline rehearsal of all three hero queries, with the same cutoff and fusion as the app. */
 public class SmokeMain {
-    private static final String[] HERO_QUERIES = {
-            "my database keeps growing even though I delete rows",
-            "find rows where the text is spelled slightly wrong",
-            "wal_level logical"
-    };
-
     public static void main(String[] args) {
-        String databaseUrl = System.getenv("DATABASE_URL");
-        String apiKey = System.getenv("OPENAI_API_KEY");
+        var fixture = new FixtureLoader().load();
+        var byText = fixture.stream().collect(Collectors.toMap(FixtureQuery::query, query -> query));
+        List<FixtureQuery> heroes = DemoQueries.HERO_QUERIES.stream().map(text -> {
+            var query = byText.get(text);
+            if (query == null) throw new IllegalStateException("Hero query is missing from the fixture: " + text);
+            return query;
+        }).toList();
+        var cache = new QueryEmbeddingCache(
+                Path.of("applications/search/src/main/resources/fixture-query-embeddings.tsv"), fixture);
+        var qrels = new QrelsLoader().load(Path.of("data/pgdocs/qrels.tsv"),
+                heroes.stream().map(FixtureQuery::queryId).collect(Collectors.toSet()), QrelsLoader.Mode.EXACT_ONLY);
 
-        DataSource dataSource = DataSourceFactory.create(databaseUrl, 10, "set hnsw.ef_search = 400");
-        var bm25Gateway = new Bm25Gateway(dataSource);
-        var embeddingGateway = new EmbeddingGateway(dataSource);
-        var chunksGateway = new ChunksGateway(dataSource);
-        var client = (apiKey == null || apiKey.isBlank()) ? null : new OpenAiEmbeddingClient(apiKey);
-
-        for (String query : HERO_QUERIES) {
-            System.out.println("\n" + "=".repeat(70));
-            System.out.println("QUERY: " + query);
-            System.out.println("=".repeat(70));
-
-            System.out.println("\n-- BM25 (lexical) top 5 --");
-            printResults(bm25Gateway.search(query, 5), chunksGateway);
-
-            if (client != null) {
-                float[] vector = client.embed(query);
-                System.out.println("\n-- Embeddings (semantic) top 5 --");
-                printResults(embeddingGateway.search(vector, 5), chunksGateway);
-            } else {
-                System.out.println("\n-- Embeddings skipped (no OPENAI_API_KEY) --");
+        try (var source = DataSourceFactory.create(System.getenv("DATABASE_URL"), 10, CONNECTION_INIT_SQL)) {
+            var chunks = new ChunksGateway(source);
+            if (chunks.count() == 0 || chunks.countWithEmbeddings() != chunks.count()) {
+                throw new IllegalStateException("Smoke check needs a fully embedded corpus; run ingestDocs and backfillEmbeddings");
             }
-        }
-    }
-
-    private static void printResults(List<SearchResult> results, ChunksGateway chunksGateway) {
-        if (results.isEmpty()) {
-            System.out.println("   (no results)");
-            return;
-        }
-        for (SearchResult result : results) {
-            var chunk = chunksGateway.find(result.chunkId());
-            String title = chunk.map(c -> c.title()).orElse("?");
-            String page = chunk.map(c -> c.page()).orElse("?");
-            System.out.printf("   [%.4f] %s  (%s)%n", result.score(), title, page);
+            var rankings = new FixtureRankings(heroes, cache, new Bm25Gateway(source), new EmbeddingGateway(source));
+            for (int i = 0; i < heroes.size(); i++) {
+                var query = heroes.get(i);
+                System.out.println("\nQUERY: " + query.query() + " (cached embedding)");
+                int[] hits = new int[3];
+                int methodIndex = 0;
+                for (String method : List.of("bm25", "embeddings", "hybrid")) {
+                    var ids = rankings.method(method).rank(query).stream().limit(K).toList();
+                    var summaries = chunks.findSummaries(ids);
+                    var relevant = qrels.relevantFor(query.queryId());
+                    hits[methodIndex++] = (int) ids.stream().filter(relevant::contains).count();
+                    System.out.printf("-- %s top %d: %d/%d Exact --%n", method, K, hits[methodIndex - 1], relevant.size());
+                    int rank = 1;
+                    for (long id : ids) {
+                        var chunk = summaries.get(id);
+                        if (chunk == null) throw new IllegalStateException("Missing retrieved chunk " + id);
+                        System.out.printf("  %2d. %s%s (%s)%n", rank++, relevant.contains(id) ? "[Exact] " : "",
+                                chunk.title(), chunk.page());
+                    }
+                }
+                boolean matchesScript = switch (i) {
+                    case 0 -> hits[1] > hits[0];
+                    case 1 -> hits[0] > hits[1];
+                    default -> hits[2] > Math.max(hits[0], hits[1]);
+                };
+                if (!matchesScript) {
+                    throw new IllegalStateException("Hero query no longer demonstrates the scripted comparison: " + query.query());
+                }
+            }
+            System.out.println("\nPASS: all three hero comparisons hold at k=" + K + ".");
         }
     }
 }

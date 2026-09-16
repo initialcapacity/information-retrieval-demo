@@ -2,6 +2,30 @@
   "k" : 10,
   "rrfK" : 60,
   "efSearch" : 400,
+  "candidateDepth" : 100,
+  "provenance" : {
+    "generatedAt" : "2026-09-16T00:55:51.005078Z",
+    "chunkCount" : 1779,
+    "corpusSha256" : "5c642e82f03c926a7359c605536cc1efd260061d944f03f17334065ff1922ac2",
+    "indexedCorpusSha256" : "eefee8189b7bcbdde17e02945fddb7227c6d53f658e8b2b3c2f44b984ecd6e86",
+    "documentEmbeddingsSha256" : "9aafae1aca6f0db0bb65f4473d4a999184c1de2d33f2a20dd5b3e6d258f4c79a",
+    "fixtureSha256" : "5c485406a958b23757985725ba460824a38f94db8c1ea4bc0122857fc6179688",
+    "qrelsSha256" : "badff8f98c92d4353fa24ee96932202b6280bdec6dd81ea5a3445c99ebcf696e",
+    "queryEmbeddingsSha256" : "16effb5fb707eda3e78fa0d2475583be13c34069b087cacdc81028a5d9efebb9",
+    "embeddingModel" : "text-embedding-3-small",
+    "embeddingDimensions" : 1536,
+    "postgresVersion" : "18.6 (Debian 18.6-1.pgdg13+2)",
+    "extensionVersions" : {
+      "pg_search" : "0.25.3",
+      "vector" : "0.8.4"
+    },
+    "indexDefinitions" : {
+      "chunks_bm25" : "CREATE INDEX chunks_bm25 ON public.chunks USING bm25 (chunk_id, search_text) WITH (key_field=chunk_id)",
+      "chunks_embedding" : "CREATE INDEX chunks_embedding ON public.chunks USING hnsw (embedding vector_cosine_ops)",
+      "chunks_pkey" : "CREATE UNIQUE INDEX chunks_pkey ON public.chunks USING btree (chunk_id)"
+    }
+  },
+  "rankingsSha256" : "f359108072826f22a05c93edd503dd85dd9f27c8e1e5df76ff9c5235767773ba",
   "modes" : [ {
     "name" : "Exact only",
     "overall" : [ {
@@ -13,15 +37,15 @@
     }, {
       "method" : "embeddings",
       "queryCount" : 56,
-      "precision" : 0.33214285714285724,
-      "recall" : 0.4916219757640564,
-      "f1" : 0.3663068052427799
+      "precision" : 0.3339285714285715,
+      "recall" : 0.492897485968138,
+      "f1" : 0.3677949004808752
     }, {
       "method" : "hybrid",
       "queryCount" : 56,
-      "precision" : 0.3625,
-      "recall" : 0.543743820878914,
-      "f1" : 0.40286042328550675
+      "precision" : 0.3607142857142857,
+      "recall" : 0.5421204442555375,
+      "f1" : 0.4011597430133979
     } ],
     "buckets" : [ {
       "lean" : "keyword",
@@ -57,9 +81,9 @@
       }, {
         "method" : "embeddings",
         "queryCount" : 20,
-        "precision" : 0.3849999999999999,
-        "recall" : 0.499846837944664,
-        "f1" : 0.4018850009639484
+        "precision" : 0.3899999999999999,
+        "recall" : 0.5034182665160926,
+        "f1" : 0.40605166763061507
       }, {
         "method" : "hybrid",
         "queryCount" : 20,
@@ -85,9 +109,9 @@
       }, {
         "method" : "hybrid",
         "queryCount" : 19,
-        "precision" : 0.3736842105263158,
-        "recall" : 0.5149000122684333,
-        "f1" : 0.3974337610232857
+        "precision" : 0.3684210526315789,
+        "recall" : 0.510115323273218,
+        "f1" : 0.3924212296949649
       } ]
     } ]
   }, {
@@ -107,9 +131,9 @@
     }, {
       "method" : "hybrid",
       "queryCount" : 56,
-      "precision" : 0.8053571428571428,
-      "recall" : 0.33890853626839046,
-      "f1" : 0.4683951403258935
+      "precision" : 0.8071428571428572,
+      "recall" : 0.3395462913704313,
+      "f1" : 0.4693349899499536
     } ],
     "buckets" : [ {
       "lean" : "keyword",
@@ -151,9 +175,9 @@
       }, {
         "method" : "hybrid",
         "queryCount" : 20,
-        "precision" : 0.6950000000000001,
-        "recall" : 0.28908680634752826,
-        "f1" : 0.4033021985004974
+        "precision" : 0.7,
+        "recall" : 0.29087252063324254,
+        "f1" : 0.4059337774478659
       } ]
     }, {
       "lean" : "mixed",

@@ -3,14 +3,12 @@ package io.ic.starter.starterenv;
 public record Environment(
         String databaseUrl,
         int port,
-        String cookieSecret,
         String openAiApiKey
 ) {
     public static Environment fromEnv() {
         return new Environment(
                 read("DATABASE_URL"),
                 readInt("PORT", 8888),
-                read("COOKIE_SECRET", "local-dev-secret"),
                 read("OPENAI_API_KEY", "")
         );
     }

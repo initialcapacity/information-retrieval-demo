@@ -1,5 +1,7 @@
 package io.ic.starter.eval;
 
+import io.ic.starter.search.RetrievalConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -19,8 +21,8 @@ import java.util.Properties;
  * the old vector.
  */
 public record QueryEmbeddingMetadata(String model, int dimensions, String fixtureSha256) {
-    public static final String MODEL = "text-embedding-3-small";
-    public static final int DIMENSIONS = 1536;
+    public static final String MODEL = RetrievalConfig.EMBEDDING_MODEL;
+    public static final int DIMENSIONS = RetrievalConfig.EMBEDDING_DIMENSIONS;
 
     public static QueryEmbeddingMetadata expected(List<FixtureQuery> queries) {
         return new QueryEmbeddingMetadata(MODEL, DIMENSIONS, fingerprint(queries));

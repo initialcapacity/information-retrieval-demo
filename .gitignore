@@ -3,3 +3,5 @@ build
 .gradle
 .env
 # Raw corpus downloads are reproducible; the chunked corpus and query embeddings are committed for determinism.
+
+__pycache__/

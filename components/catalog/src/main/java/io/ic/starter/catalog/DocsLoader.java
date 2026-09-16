@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
 
 /**
  * Parses the tab-separated docs chunks (data/pgdocs/chunks.tsv). Columns
@@ -19,20 +20,27 @@ public class DocsLoader {
         try (BufferedReader reader = Files.newBufferedReader(chunksTsv, StandardCharsets.UTF_8)) {
             var chunks = new ArrayList<DocChunk>();
             String header = reader.readLine();
-            if (header == null) {
-                return chunks;
+            if (!"chunk_id\ttitle\tpage\ttext".equals(header)) {
+                throw new IllegalArgumentException("Expected chunks TSV header in " + chunksTsv);
             }
+            var ids = new HashSet<Long>();
+            int lineNumber = 1;
             String line;
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
                 if (line.isEmpty()) {
                     continue;
                 }
                 String[] fields = line.split("\t", -1);
-                if (fields.length < 4) {
-                    continue;
+                if (fields.length != 4) {
+                    throw new IllegalArgumentException("Expected four fields at " + chunksTsv + ":" + lineNumber);
+                }
+                long id = Long.parseLong(fields[0].trim());
+                if (!ids.add(id)) {
+                    throw new IllegalArgumentException("Duplicate chunk id " + id + " at " + chunksTsv + ":" + lineNumber);
                 }
                 chunks.add(new DocChunk(
-                        Long.parseLong(fields[0].trim()),
+                        id,
                         fields[1].trim(),
                         fields[2].trim(),
                         fields[3].trim()

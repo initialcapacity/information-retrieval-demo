@@ -25,43 +25,44 @@ public class BackfillMain {
             throw new IllegalStateException("OPENAI_API_KEY is required for the embedding backfill");
         }
 
-        var dataSource = DataSourceFactory.create(databaseUrl);
-        var gateway = new ChunksGateway(dataSource);
-        var client = new OpenAiEmbeddingClient(apiKey);
+        try (var dataSource = DataSourceFactory.create(databaseUrl, 10)) {
+            var gateway = new ChunksGateway(dataSource);
+            var client = new OpenAiEmbeddingClient(apiKey);
 
-        long total = gateway.count();
-        long alreadyDone = gateway.countWithEmbeddings();
-        System.out.printf("Chunks: %d, already embedded: %d%n", total, alreadyDone);
+            long total = gateway.count();
+            long alreadyDone = gateway.countWithEmbeddings();
+            System.out.printf("Chunks: %d, already embedded: %d%n", total, alreadyDone);
 
-        long processed = 0;
-        long startTime = System.currentTimeMillis();
-        while (true) {
-            List<ChunkEmbeddingInput> batch = gateway.chunksMissingEmbeddings(BATCH_SIZE);
-            if (batch.isEmpty()) {
-                break;
+            long processed = 0;
+            long startTime = System.currentTimeMillis();
+            while (true) {
+                List<ChunkEmbeddingInput> batch = gateway.chunksMissingEmbeddings(BATCH_SIZE);
+                if (batch.isEmpty()) {
+                    break;
+                }
+                List<String> texts = batch.stream().map(ChunkEmbeddingInput::searchText).toList();
+                List<float[]> vectors = client.embed(texts);
+
+                var updates = new ArrayList<ChunksGateway.EmbeddingUpdate>(batch.size());
+                for (int i = 0; i < batch.size(); i++) {
+                    updates.add(new ChunksGateway.EmbeddingUpdate(
+                            batch.get(i).chunkId(),
+                            VectorLiterals.toLiteral(vectors.get(i))
+                    ));
+                }
+                gateway.updateEmbeddings(updates);
+
+                processed += batch.size();
+                double elapsed = (System.currentTimeMillis() - startTime) / 1000.0;
+                System.out.printf("  embedded %d (%.1f/s), remaining ~%d%n",
+                        alreadyDone + processed, processed / Math.max(elapsed, 0.001),
+                        total - alreadyDone - processed);
             }
-            List<String> texts = batch.stream().map(ChunkEmbeddingInput::searchText).toList();
-            List<float[]> vectors = client.embed(texts);
 
-            var updates = new ArrayList<ChunksGateway.EmbeddingUpdate>(batch.size());
-            for (int i = 0; i < batch.size(); i++) {
-                updates.add(new ChunksGateway.EmbeddingUpdate(
-                        batch.get(i).chunkId(),
-                        VectorLiterals.toLiteral(vectors.get(i))
-                ));
-            }
-            gateway.updateEmbeddings(updates);
-
-            processed += batch.size();
-            double elapsed = (System.currentTimeMillis() - startTime) / 1000.0;
-            System.out.printf("  embedded %d (%.1f/s), remaining ~%d%n",
-                    alreadyDone + processed, processed / Math.max(elapsed, 0.001),
-                    total - alreadyDone - processed);
+            System.out.println("Embeddings complete: " + gateway.countWithEmbeddings() + " / " + total);
+            System.out.println("Building HNSW index (this can take a moment)...");
+            gateway.createEmbeddingIndex();
+            System.out.println("Done.");
         }
-
-        System.out.println("Embeddings complete: " + gateway.countWithEmbeddings() + " / " + total);
-        System.out.println("Building HNSW index (this can take a moment)...");
-        gateway.createEmbeddingIndex();
-        System.out.println("Done.");
     }
 }
