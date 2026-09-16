@@ -32,7 +32,7 @@ class FreemarkerEscapingTest {
                 .process(Map.of("report", report, "active", "eval"), output);
         assertTrue(output.toString().contains("Exact only"));
         assertTrue(output.toString().contains("Exact + Partial"));
-        assertTrue(output.toString().contains("does not rerun retrieval"));
+        assertTrue(output.toString().contains("does not run a new evaluation"));
     }
 
 }

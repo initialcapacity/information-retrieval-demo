@@ -3,11 +3,11 @@
 <@layout.layout active="search" title="Search - Retrieval Playground">
 <section>
     <header>
-        <p class="eyebrow"><span class="eyebrow-inner">live retrieval</span></p>
-        <h2>Three ways to <em>search</em>, side by side</h2>
+        <p class="eyebrow"><span class="eyebrow-inner">PostgreSQL manual</span></p>
+        <h2>Compare <em>search results</em></h2>
         <p class="lede">
-            One query, three rankings: BM25, embeddings, and their RRF hybrid.
-            Exact and Partial badges on fixture queries show where each method succeeds and fails.
+            Search with BM25, embeddings, and a hybrid that combines both rankings using reciprocal rank fusion (RRF).
+            For labeled queries, Exact marks sections judged to answer the question; Partial marks related sections.
         </p>
 
         <form class="search-form" action="/" method="get">
@@ -15,7 +15,7 @@
             <button type="submit" class="accent">Search</button>
         </form>
         <div class="hero-links">
-            <span class="lbl">hero queries:</span>
+            <span class="lbl">Try a query:</span>
             <#list view.heroQueries() as q>
                 <a class="button secondary" href="/?q=${q?url('UTF-8')}">${q}</a>
             </#list>
@@ -25,7 +25,7 @@
             <div class="qpicker" id="qpicker">
                 <button type="button" class="button qpicker-trigger" id="qpicker-trigger"
                         aria-haspopup="listbox" aria-expanded="false" aria-controls="qpicker-panel">
-                    Pick a labeled query <span class="n">(${view.pickerTotal()})</span>
+                    Browse labeled queries <span class="n">(${view.pickerTotal()})</span>
                     <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
 
@@ -33,7 +33,7 @@
                     <div class="qpanel-head">
                         <div class="title">
                             <span>Labeled queries</span>
-                            <span class="meta">${view.pickerTotal()} queries &middot; grouped by query type</span>
+                            <span class="meta">${view.pickerTotal()} queries by type</span>
                         </div>
                         <div class="qfilter">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -64,7 +64,7 @@
                         <span class="k keyword">Keyword</span>
                         <span class="k semantic">Semantic</span>
                         <span class="k mixed">Mixed</span>
-                        <span style="margin-left:auto;">selecting a query runs it</span>
+                        <span style="margin-left:auto;">Choose a query to search</span>
                     </div>
                 </div>
             </div>
@@ -74,9 +74,9 @@
     <#if view.submitted()>
         <div class="row" style="margin-bottom: var(--space-5); gap: var(--space-3);">
             <#if view.fixtureQuery()>
-                <span class="badge signal dot">relevance labeled</span>
+                <span class="badge signal dot">Labeled query</span>
             <#else>
-                <span class="badge">ad-hoc query: no relevance labels</span>
+                <span class="badge">No relevance labels for this query</span>
             </#if>
             <#if view.embeddingSource()??>
                 <span class="badge">embedding: ${view.embeddingSource()}<#if view.timing()?? && view.timing().embedding()??> &middot; ${view.timing().embedding()}</#if></span>
@@ -99,10 +99,10 @@
                     <div class="subsection-title" style="margin-bottom: var(--space-4);">
                         ${column.method()}
                         <small>${column.subtitle()}</small>
-                        <span class="ms" title="Server-side wall clock for this method's query">${column.latency()}</span>
+                        <span class="ms" title="Time spent running this search on the server">${column.latency()}</span>
                     </div>
                     <#if column.results()?size == 0>
-                        <p style="color: var(--text-muted); font-size: var(--fs-sm);">No results.</p>
+                        <p style="color: var(--text-muted); font-size: var(--fs-sm);">No matching sections.</p>
                     <#else>
                         <div class="result-list">
                             <#list column.results() as r>
@@ -129,12 +129,11 @@
 
         <#if view.timing()??>
             <p class="latency-note">
-                Timings are server-side wall clock, one measurement per request.
-                BM25 and embeddings each return ${view.timing().displayK()} results;
-                the hybrid retrieves ${view.timing().candidateDepth()} from both methods before fusing,
-                so it does the most work.
-                A query outside the committed cache also pays a live embedding round trip.
-                The first query after startup carries JIT and connection-pool warmup: run it twice for a warm number.
+                Times are measured on the server for this request.
+                BM25 and embeddings each return up to ${view.timing().displayK()} results.
+                Hybrid combines up to ${view.timing().candidateDepth()} results from each method, then shows the top ${view.timing().displayK()}.
+                Queries without a cached embedding need an API call; its time is shown separately.
+                The first search can be slower while Java and the database connections warm up. Run it again to compare.
             </p>
         </#if>
     </#if>

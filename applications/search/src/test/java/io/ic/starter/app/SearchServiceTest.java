@@ -50,7 +50,7 @@ class SearchServiceTest {
 
         assertEquals(1, view.columns().size());
         assertEquals("BM25", view.columns().getFirst().method());
-        assertTrue(view.error().contains("could not process"));
+        assertTrue(view.error().contains("couldn't create an embedding"));
         assertFalse(view.error().contains("provider response"));
     }
 }

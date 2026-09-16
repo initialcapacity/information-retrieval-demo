@@ -62,7 +62,7 @@ public class SearchService {
         }
         if (query.length() > QueryEmbeddingResolver.MAX_QUERY_CHARACTERS) {
             return new SearchView(query, true, false, null, "Query is too long",
-                    "Queries are limited to " + QueryEmbeddingResolver.MAX_QUERY_CHARACTERS + " characters.",
+                    "Shorten your query to " + QueryEmbeddingResolver.MAX_QUERY_CHARACTERS + " characters or fewer.",
                     List.of(), null, HERO_QUERIES, pickerTotal, pickerGroups);
         }
         long start = System.nanoTime();
@@ -76,12 +76,12 @@ public class SearchService {
         } catch (RuntimeException e) {
             // BM25 still renders; dense/hybrid need an embedding.
             LOGGER.warn("Embedding unavailable; returning BM25-only results", e);
-            var columns = List.of(column("BM25", "lexical", bm25, queryId));
+            var columns = List.of(column("BM25", "keyword", bm25, queryId));
             String message = e instanceof IllegalStateException && e.getMessage() != null
                     && e.getMessage().startsWith("No cached embedding")
-                    ? e.getMessage()
-                    : "The embedding service could not process this query. BM25 results are still available.";
-            return new SearchView(query, true, queryId != null, null, "Embeddings and hybrid unavailable",
+                    ? "This query needs a new embedding. Choose a labeled query, or set OPENAI_API_KEY to search with your own. BM25 results are shown below."
+                    : "We couldn't create an embedding for this query. BM25 results are shown below. Try again to compare all three methods.";
+            return new SearchView(query, true, queryId != null, null, "Only BM25 results are available",
                     message, columns,
                     timing(null, start), HERO_QUERIES, pickerTotal, pickerGroups);
         }
@@ -92,7 +92,7 @@ public class SearchService {
                 .hybrid(query, vector, CANDIDATE_DEPTH).stream().limit(K).toList());
 
         var columns = List.of(
-                column("BM25", "lexical", bm25, queryId),
+                column("BM25", "keyword", bm25, queryId),
                 column("Embeddings", "semantic", dense, queryId),
                 column("Hybrid", "RRF k=" + RRF_K, hybrid, queryId)
         );
@@ -119,9 +119,9 @@ public class SearchService {
         record Meta(String label, String desc) {
         }
         var meta = Map.of(
-                "keyword", new Meta("Keyword", "exact tokens: config names, error codes"),
-                "semantic", new Meta("Semantic", "paraphrased, no shared vocabulary"),
-                "mixed", new Meta("Mixed", "exact tokens and paraphrase together")
+                "keyword", new Meta("Keyword", "Terms from the manual, such as config names"),
+                "semantic", new Meta("Semantic", "Problems described in other words"),
+                "mixed", new Meta("Mixed", "Manual terms and problem descriptions")
         );
         Map<String, List<FixtureQuery>> byLean = new FixtureLoader().load().stream()
                 .collect(Collectors.groupingBy(FixtureQuery::lean));
